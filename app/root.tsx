@@ -15,6 +15,8 @@ import {
 	useTheme,
 } from 'remix-themes';
 import stylesheet from '~/tailwind.css?url';
+import { SiteMain } from './features/main-content';
+import { SiteHeader } from './features/site-header';
 import { themeSessionResolver } from './utils/theme.server';
 
 export const links: LinksFunction = () => {
@@ -42,7 +44,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 	} satisfies LoaderData;
 };
 
-export function useRootLoaderData() {
+function useRootLoaderData() {
 	return useRouteLoaderData<LoaderData>('root');
 }
 
@@ -81,7 +83,8 @@ function InnerLayout({
 				className='min-h-screen flex flex-col subpixel-antialiased'
 				suppressHydrationWarning
 			>
-				{children}
+				<SiteHeader />
+				<SiteMain>{children}</SiteMain>
 				<ScrollRestoration />
 				<PreventFlashOnWrongTheme ssrTheme={ssrTheme} />
 				<Scripts />
