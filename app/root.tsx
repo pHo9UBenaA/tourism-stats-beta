@@ -1,45 +1,91 @@
-import type { LinksFunction } from "@remix-run/node";
+import type { LinksFunction, LoaderFunction } from '@remix-run/node';
 import {
 	Links,
 	Meta,
 	Outlet,
 	Scripts,
 	ScrollRestoration,
-} from "@remix-run/react";
+	useRouteLoaderData,
+} from '@remix-run/react';
+import type { ReactNode } from 'react';
+import {
+	PreventFlashOnWrongTheme,
+	type Theme,
+	ThemeProvider,
+	useTheme,
+} from 'remix-themes';
+import stylesheet from '~/tailwind.css?url';
+import { themeSessionResolver } from './utils/theme.server';
 
-import "./tailwind.css";
+export const links: LinksFunction = () => {
+	return [
+		{
+			rel: 'stylesheet',
+			href: stylesheet,
+		},
+		{
+			rel: 'icon',
+			type: 'image/x-icon',
+			href: '/favicon.ico',
+		},
+	];
+};
 
-export const links: LinksFunction = () => [
-	{ rel: "preconnect", href: "https://fonts.googleapis.com" },
-	{
-		rel: "preconnect",
-		href: "https://fonts.gstatic.com",
-		crossOrigin: "anonymous",
-	},
-	{
-		rel: "stylesheet",
-		href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
-	},
-];
+type LoaderData = {
+	theme: Theme | null;
+};
 
-export function Layout({ children }: { children: React.ReactNode }) {
+export const loader: LoaderFunction = async ({ request }) => {
+	const { getTheme } = await themeSessionResolver(request);
+	return {
+		theme: getTheme(),
+	} satisfies LoaderData;
+};
+
+export function useRootLoaderData() {
+	return useRouteLoaderData<LoaderData>('root');
+}
+
+export function Layout({ children }: { children: ReactNode }) {
+	const data = useRootLoaderData();
+
 	return (
-		<html lang="en">
-			<head>
-				<meta charSet="utf-8" />
-				<meta name="viewport" content="width=device-width, initial-scale=1" />
-				<Meta />
-				<Links />
-			</head>
-			<body>
-				{children}
-				<ScrollRestoration />
-				<Scripts />
-			</body>
-		</html>
+		<ThemeProvider
+			specifiedTheme={data?.theme ?? null}
+			themeAction='/api/theme-set'
+		>
+			<InnerLayout ssrTheme={Boolean(data?.theme)}>{children}</InnerLayout>
+		</ThemeProvider>
 	);
 }
 
 export default function App() {
 	return <Outlet />;
+}
+
+function InnerLayout({
+	ssrTheme,
+	children,
+}: { ssrTheme: boolean; children: ReactNode }) {
+	const [theme] = useTheme();
+
+	return (
+		<html lang='en' data-theme={theme} className={theme ?? ''}>
+			<head>
+				<meta charSet='utf-8' />
+				<meta name='viewport' content='width=device-width, initial-scale=1' />
+				<Meta />
+				<Links />
+			</head>
+			<body
+				className='min-h-screen flex flex-col subpixel-antialiased'
+				suppressHydrationWarning
+			>
+				{children}
+				<ScrollRestoration />
+				<PreventFlashOnWrongTheme ssrTheme={ssrTheme} />
+				<Scripts />
+			</body>
+		</html>
+	);
 }
