@@ -1,4 +1,3 @@
-// theme.set.ts
 import { createThemeAction } from 'remix-themes';
 
 import { themeSessionResolver } from '../utils/theme.server';

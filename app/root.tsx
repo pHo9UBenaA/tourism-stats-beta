@@ -14,9 +14,9 @@ import {
 	ThemeProvider,
 	useTheme,
 } from 'remix-themes';
-import stylesheet from '~/tailwind.css?url';
 import { SiteMain } from './features/main-content';
 import { SiteHeader } from './features/site-header';
+import stylesheet from './tailwind.css?url';
 import { themeSessionResolver } from './utils/theme.server';
 
 export const links: LinksFunction = () => {

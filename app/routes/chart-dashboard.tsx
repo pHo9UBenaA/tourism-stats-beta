@@ -3,18 +3,12 @@ import {
 	AccordionContent,
 	AccordionItem,
 	AccordionTrigger,
-} from '~/components/ui/accordion';
-import { Tabs, TabsList, TabsTrigger } from '~/components/ui/tabs';
-import ChartLineDefault from '~/features/chart-line-default';
-import { SiteHeader } from '~/features/site-header';
-// import { YearSelector } from '~/components/year-selector';
+} from '../components/ui/accordion';
+import { Tabs, TabsList, TabsTrigger } from '../components/ui/tabs';
+import ChartLineDefault from '../features/chart-line-default';
 
 export default function ChartDashboard() {
 	return (
-		// <div className='min-h-screen flex flex-col'>
-		// 	<SiteHeader />
-		// 	<main className='flex-1 space-y-4 mx-auto max-w-2xl p-4'>
-
 		<div>
 			<h1 className='text-3xl font-bold tracking-tight'>
 				Tourism Statistics Chart
@@ -84,7 +78,5 @@ export default function ChartDashboard() {
 				</AccordionItem>
 			</Accordion>
 		</div>
-		// 	</main>
-		// </div>
 	);
 }
