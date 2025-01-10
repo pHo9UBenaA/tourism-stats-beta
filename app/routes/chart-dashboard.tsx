@@ -1,3 +1,7 @@
+import type { LoaderFunctionArgs } from '@remix-run/node';
+import { useLoaderData } from '@remix-run/react';
+import { fetchAllYearsDigitalPrefectureData } from 'app/data/digital/getData';
+import { DigitalTourismStats } from 'app/features/digital-tourism-stats-chart';
 import {
 	Accordion,
 	AccordionContent,
@@ -5,9 +9,15 @@ import {
 	AccordionTrigger,
 } from '../components/ui/accordion';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/tabs';
-import ChartLineDefault from '../features/chart-line-default';
+
+export async function loader({ request }: LoaderFunctionArgs) {
+	const data = await fetchAllYearsDigitalPrefectureData();
+	return data;
+}
 
 export default function ChartDashboard() {
+	const rawData = useLoaderData<typeof loader>();
+
 	return (
 		<div>
 			<h1 className='text-3xl font-bold tracking-tight'>
@@ -33,46 +43,7 @@ export default function ChartDashboard() {
 									</TabsList>
 								</Tabs>
 							</div>
-							<ChartLineDefault />
-						</div>
-					</AccordionContent>
-				</AccordionItem>
-
-				<AccordionItem value='domestic'>
-					<AccordionTrigger>Domestic Tourism Information</AccordionTrigger>
-					<AccordionContent>
-						<div className='space-y-4'>
-							<div className='flex flex-wrap '>
-								{/* <YearSelector /> */}
-								<Tabs defaultValue='prefecture'>
-									<TabsList>
-										<TabsTrigger value='prefecture'>By Prefecture</TabsTrigger>
-										<TabsTrigger value='municipality'>
-											By Municipality
-										</TabsTrigger>
-									</TabsList>
-								</Tabs>
-							</div>
-							<ChartLineDefault />
-						</div>
-					</AccordionContent>
-				</AccordionItem>
-
-				<AccordionItem value='accommodation'>
-					<AccordionTrigger>Accommodation Information</AccordionTrigger>
-					<AccordionContent>
-						<div className='space-y-4'>
-							<div className='flex flex-wrap '>
-								<Tabs defaultValue='accommodation'>
-									<TabsList>
-										<TabsTrigger value='accommodation'>
-											Accommodation
-										</TabsTrigger>
-										<TabsTrigger value='occupancy'>Occupancy Rates</TabsTrigger>
-									</TabsList>
-								</Tabs>
-							</div>
-							<ChartLineDefault />
+							<DigitalTourismStats rawData={rawData} />
 						</div>
 					</AccordionContent>
 				</AccordionItem>

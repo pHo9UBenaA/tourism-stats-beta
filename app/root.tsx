@@ -18,6 +18,7 @@ import { SiteMain } from './features/main-content';
 import { SiteHeader } from './features/site-header';
 import stylesheet from './tailwind.css?url';
 import { themeSessionResolver } from './utils/theme.server';
+import { Toaster } from './components/ui/toaster';
 
 export const links: LinksFunction = () => {
 	return [
@@ -85,6 +86,7 @@ function InnerLayout({
 			>
 				<SiteHeader />
 				<SiteMain>{children}</SiteMain>
+				<Toaster />
 				<ScrollRestoration />
 				<PreventFlashOnWrongTheme ssrTheme={ssrTheme} />
 				<Scripts />
