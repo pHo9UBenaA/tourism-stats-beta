@@ -1,7 +1,6 @@
 import { Button } from 'app/components/ui/button';
 import { Checkbox } from 'app/components/ui/checkbox';
 import { Label } from 'app/components/ui/label';
-import type { FC } from 'react';
 import {
 	Dialog,
 	DialogClose,
@@ -12,19 +11,17 @@ import {
 	DialogTrigger,
 } from '../components/ui/dialog';
 
-interface ModalComponentProps {
+type Props = {
 	uniqueRegions: string[];
 	selectedRegions: string[];
 	handleRegionChange: (region: string, checked: boolean) => void;
-	handleRegionClear: () => void;
-}
+};
 
-const SelectRegionDialog: FC<ModalComponentProps> = ({
+const SelectRegionDialog = ({
 	uniqueRegions,
 	selectedRegions,
 	handleRegionChange,
-	handleRegionClear,
-}) => {
+}: Props) => {
 	const selectedRegionsSet = new Set(selectedRegions);
 
 	return (
@@ -51,9 +48,7 @@ const SelectRegionDialog: FC<ModalComponentProps> = ({
 									handleRegionChange(region, !!checked);
 								}}
 							/>
-							<Label className='pl-1'>
-								{region}
-							</Label>
+							<Label className='pl-1'>{region}</Label>
 						</div>
 					))}
 				</div>

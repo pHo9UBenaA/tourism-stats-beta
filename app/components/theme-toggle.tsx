@@ -1,12 +1,9 @@
 import { Moon, Sun } from 'lucide-react';
+import type { HTMLAttributes } from 'react';
 import { Theme, useTheme } from 'remix-themes';
-
-import type React from 'react';
 import { Button } from './ui/button';
 
-export function ThemeToggle({
-	className,
-}: React.HTMLAttributes<HTMLDivElement>) {
+export function ThemeToggle({ className }: HTMLAttributes<HTMLDivElement>) {
 	const [currentTheme, setTheme] = useTheme();
 
 	return (

@@ -1,3 +1,5 @@
+import { TabTitle } from 'app/constants/digital-tourism-stats';
+import type { TabType } from 'app/types/digital-tourism-stats';
 import { memo } from 'react';
 import {
 	CartesianGrid,
@@ -17,24 +19,21 @@ import {
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from './ui/chart';
 // import { TODOUHUKEN_COLOR_MAP } from '../consts/const';
 
-interface ChartProps {
+type Props = {
 	currentChartData: { date: string; [key: string]: string | number }[];
 	selectedRegions: string[];
-}
+	groupBy: TabType;
+};
 
 const LineChart = memo(function Chart({
 	currentChartData,
 	selectedRegions,
-}: ChartProps) {
-	const getPrefecture = (region: string) => {
-		const match = region.match(/^(.*?[都道府県])/);
-		return match ? match[1] : region;
-	};
-
+	groupBy,
+}: Props) {
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>By Region</CardTitle>
+				<CardTitle>{TabTitle[groupBy]}</CardTitle>
 				<CardDescription>January - June 2024</CardDescription>
 			</CardHeader>
 			<CardContent>

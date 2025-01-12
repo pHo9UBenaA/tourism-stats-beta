@@ -1,5 +1,5 @@
 import { vitePlugin as remix } from '@remix-run/dev';
-import { defineConfig } from 'vite';
+import { type AliasOptions, defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 
 declare module '@remix-run/node' {
@@ -7,6 +7,15 @@ declare module '@remix-run/node' {
 		v3_singleFetch: true;
 	}
 }
+
+const getAlias = (): AliasOptions => {
+	if (process.env.NODE_ENV !== 'production') {
+		return {
+			'react-dom/client': 'react-dom/profiling',
+		};
+	}
+	return {};
+};
 
 export default defineConfig({
 	plugins: [
@@ -19,6 +28,9 @@ export default defineConfig({
 				v3_lazyRouteDiscovery: true,
 			},
 		}),
-		tsconfigPaths()
+		tsconfigPaths(),
 	],
+	resolve: {
+		alias: getAlias(),
+	},
 });

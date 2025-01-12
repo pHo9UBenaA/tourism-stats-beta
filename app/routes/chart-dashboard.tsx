@@ -9,11 +9,13 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from 'app/components/ui/select';
+import { Indexes, TabTitle } from 'app/constants/digital-tourism-stats';
 import {
 	fetchMunicipalityData,
 	fetchPrefectureData,
 } from 'app/data/digital/getData';
 import { DigitalTourismStats } from 'app/features/digital-tourism-stats-chart';
+import type { TabType } from 'app/types/digital-tourism-stats';
 import { useState } from 'react';
 import {
 	Accordion,
@@ -29,23 +31,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
 	return { prefecture, municipality };
 }
 
-const tabs = {
-	prefecture: 'prefecture',
-	municipality: 'municipality',
-} as const;
-
-const isTab = (value: string): value is (typeof tabs)[keyof typeof tabs] => {
-	return Object.values(tabs).includes(
-		value as (typeof tabs)[keyof typeof tabs],
-	);
+const isTab = (value: string): value is TabType => {
+	return Object.values(Indexes).includes(value as TabType);
 };
 
 export default function ChartDashboard() {
 	const data = useLoaderData<typeof loader>();
 
-	const [tab, setTab] = useState<(typeof tabs)[keyof typeof tabs]>(
-		tabs.prefecture,
-	);
+	const [tab, setTab] = useState<TabType>(Indexes.prefecture);
 
 	const onTabChange = (value: string) => {
 		if (isTab(value)) {
@@ -88,24 +81,25 @@ export default function ChartDashboard() {
 									</SelectContent>
 								</Select>
 								<Tabs
-									defaultValue={tabs.prefecture}
+									defaultValue={Indexes.prefecture}
 									onValueChange={onTabChange}
 								>
 									<TabsList>
-										<TabsTrigger value={tabs.prefecture}>
-											By Prefecture
+										<TabsTrigger value={Indexes.prefecture}>
+											{TabTitle.prefecture}
 										</TabsTrigger>
-										<TabsTrigger value={tabs.municipality}>
-											By Municipality
+										<TabsTrigger value={Indexes.municipality}>
+											{TabTitle.municipality}
 										</TabsTrigger>
 									</TabsList>
 								</Tabs>
 							</div>
 
-							{tab === tabs.prefecture && (
+							{/* TODO: <DigitalTourismStats chartData={data[tab]} groupBy={tab} /> */}
+							{tab === Indexes.prefecture && (
 								<DigitalTourismStats chartData={data[tab]} groupBy={tab} />
 							)}
-							{tab === tabs.municipality && (
+							{tab === Indexes.municipality && (
 								<DigitalTourismStats chartData={data[tab]} groupBy={tab} />
 							)}
 						</div>

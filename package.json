@@ -4,7 +4,8 @@
 	"sideEffects": false,
 	"type": "module",
 	"scripts": {
-		"build": "remix vite:build",
+		"build:dev": "NODE_ENV=development remix vite:build",
+		"build:prod": "NODE_ENV=production remix vite:build",
 		"dev": "remix vite:dev --force",
 		"start": "remix-serve ./build/server/index.js",
 		"ci": "biome ci . --error-on-warnings",
