@@ -11,6 +11,11 @@ import {
 } from 'react';
 import * as RechartsPrimitive from 'recharts';
 
+import type {
+	NameType,
+	Payload,
+	ValueType,
+} from 'recharts/types/component/DefaultTooltipContent';
 import { cn } from '../../lib/utils';
 
 // Format: { THEME_NAME: CSS_SELECTOR }
@@ -184,6 +189,23 @@ const ChartTooltipContent = forwardRef<
 
 		const nestLabel = payload.length === 1 && indicator !== 'dot';
 
+		type tet = Payload<ValueType, NameType>;
+
+		const hasNumberValue = (
+			item: Payload<ValueType, NameType>,
+		): item is Payload<number, NameType> => {
+			return typeof item.value === 'number';
+		};
+
+		const formattedPayload = payload.every(hasNumberValue)
+			? payload.sort((a, b) => {
+					if (!a.value || !b.value) {
+						return 1;
+					}
+					return b.value - a.value;
+				})
+			: payload;
+
 		return (
 			<div
 				ref={ref}
@@ -194,7 +216,7 @@ const ChartTooltipContent = forwardRef<
 			>
 				{!nestLabel ? tooltipLabel : null}
 				<div className='grid gap-1.5'>
-					{payload.map((item, index) => {
+					{formattedPayload.map((item, index) => {
 						const key = `${nameKey || item.name || item.dataKey || 'value'}`;
 						const itemConfig = getPayloadConfigFromPayload(config, item, key);
 						const indicatorColor = color || item.payload.fill || item.color;
@@ -237,7 +259,7 @@ const ChartTooltipContent = forwardRef<
 										)}
 										<div
 											className={cn(
-												'flex flex-1 justify-between leading-none',
+												'flex flex-1 justify-between leading-none gap-1',
 												nestLabel ? 'items-end' : 'items-center',
 											)}
 										>

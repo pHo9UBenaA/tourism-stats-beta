@@ -13,14 +13,17 @@ export type DigitalRegionData = {
 	population: number; // 人口
 };
 
-const fetchAllYearsDigitalPrefectureData = async (): Promise<
-	DigitalRegionData[]
-> => {
-	const years = ['2021'];
+const years = [2021, 2022, 2023];
+
+const fetchPrefectureData = async (): Promise<DigitalRegionData[]> => {
 	const allData: DigitalRegionData[] = [];
 
 	for (const year of years) {
-		const filePath = join(process.cwd(),'app/data/digital', `city${year}.json`);
+		const filePath = join(
+			process.cwd(),
+			'app/data/digital',
+			`pref${year}.json`,
+		);
 		const jsonData = await readFile(filePath, 'utf-8');
 		const yearData: DigitalRegionData[] = JSON.parse(jsonData);
 		allData.push(...yearData);
@@ -29,4 +32,21 @@ const fetchAllYearsDigitalPrefectureData = async (): Promise<
 	return allData;
 };
 
-export { fetchAllYearsDigitalPrefectureData };
+const fetchMunicipalityData = async (): Promise<DigitalRegionData[]> => {
+	const allData: DigitalRegionData[] = [];
+
+	for (const year of years) {
+		const filePath = join(
+			process.cwd(),
+			'app/data/digital',
+			`city${year}.json`,
+		);
+		const jsonData = await readFile(filePath, 'utf-8');
+		const yearData: DigitalRegionData[] = JSON.parse(jsonData);
+		allData.push(...yearData);
+	}
+
+	return allData;
+};
+
+export { fetchPrefectureData, fetchMunicipalityData };

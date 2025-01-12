@@ -14,29 +14,13 @@ import {
 	CardHeader,
 	CardTitle,
 } from './ui/card';
-import {
-	type ChartConfig,
-	ChartContainer,
-	ChartTooltip,
-	ChartTooltipContent,
-} from './ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from './ui/chart';
 // import { TODOUHUKEN_COLOR_MAP } from '../consts/const';
 
 interface ChartProps {
-	currentChartData: ({
-		date: string;
-	} & {
-		[region: string]: number;
-	})[];
+	currentChartData: { date: string; [key: string]: string | number }[];
 	selectedRegions: string[];
 }
-
-const chartConfig = {
-	desktop: {
-		label: 'Desktop',
-		color: 'hsl(var(--chart-1))',
-	},
-} satisfies ChartConfig;
 
 const LineChart = memo(function Chart({
 	currentChartData,
@@ -50,11 +34,12 @@ const LineChart = memo(function Chart({
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle>Line Chart</CardTitle>
+				<CardTitle>By Region</CardTitle>
 				<CardDescription>January - June 2024</CardDescription>
 			</CardHeader>
 			<CardContent>
-				<ChartContainer config={chartConfig}>
+				{/* <ChartContainer config={chartConfig}> */}
+				<ChartContainer config={{}}>
 					<OriginalLineChart
 						// className="h-screen"
 						data={currentChartData}
@@ -64,42 +49,49 @@ const LineChart = memo(function Chart({
 							left: 20,
 							bottom: 5,
 						}}
+						accessibilityLayer
 					>
 						<CartesianGrid strokeDasharray='3 3' />
 						{/* see: https://github.com/recharts/recharts/issues/843 */}
-						<XAxis dataKey='date' height={20} fontSize={'0.75rem'} />
-						<YAxis width={5} fontSize={'0rem'}>
+						<XAxis
+							dataKey='date'
+							tickLine={false}
+							height={20}
+							fontSize={'0.75rem'}
+						/>
+						<YAxis width={5} tickLine={false} fontSize={'0rem'}>
 							<Label
 								style={{
 									textAnchor: 'start',
 									fontSize: '130%',
-									fill: 'gray'
+									fill: 'gray',
 								}}
 								angle={270}
-								dy={-20}
-								dx={-8}
+								dy={-25}
+								dx={-10}
 								value={'Number of visitor'}
 							/>
 						</YAxis>
 						{/* see: https://github.com/recharts/recharts/issues/787 */}
 						<ChartTooltip
 							cursor={false}
-							content={<ChartTooltipContent hideLabel />}
-							// wrapperStyleにて高さなどを変えたいという影響で、overflow: autoをつけている
+							content={<ChartTooltipContent />}
+							// wrapperStyleで高さなどを変えたいため、overflow: autoをつけている
 							wrapperStyle={{
 								pointerEvents: 'auto',
-								maxHeight: '98%',
+								maxHeight: '100%',
 								overflow: 'auto',
 							}}
 							offset={1}
 						/>
-						{/* <Legend /> */}
 						{selectedRegions.map((region) => (
 							<Line
 								key={region}
 								type='monotone'
 								dataKey={region}
-								// stroke={TODOUHUKEN_COLOR_MAP[getPrefecture(region)]}
+								stroke='hsl(var(--primary))'
+								dot={{ r: 0 }}
+								activeDot={{ r: 3 }}
 							/>
 						))}
 					</OriginalLineChart>

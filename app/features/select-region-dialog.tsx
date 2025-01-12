@@ -1,3 +1,4 @@
+import { Button } from 'app/components/ui/button';
 import { Checkbox } from 'app/components/ui/checkbox';
 import { Label } from 'app/components/ui/label';
 import type { FC } from 'react';
@@ -8,31 +9,29 @@ import {
 	DialogDescription,
 	DialogHeader,
 	DialogTitle,
+	DialogTrigger,
 } from '../components/ui/dialog';
 
 interface ModalComponentProps {
-	isOpen: boolean;
-	onClose: () => void;
-	searchTerm: string;
-	setSearchTerm: (term: string) => void;
-	filteredRegions: string[];
+	uniqueRegions: string[];
 	selectedRegions: string[];
 	handleRegionChange: (region: string, checked: boolean) => void;
 	handleRegionClear: () => void;
 }
 
-const SelectRegionModal: FC<ModalComponentProps> = ({
-	isOpen,
-	onClose,
-	searchTerm,
-	setSearchTerm,
-	filteredRegions,
+const SelectRegionDialog: FC<ModalComponentProps> = ({
+	uniqueRegions,
 	selectedRegions,
 	handleRegionChange,
 	handleRegionClear,
 }) => {
+	const selectedRegionsSet = new Set(selectedRegions);
+
 	return (
-		<Dialog open={isOpen} onOpenChange={onClose}>
+		<Dialog>
+			<DialogTrigger asChild>
+				<Button>表示する地域を選択</Button>
+			</DialogTrigger>
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>地域を選択</DialogTitle>
@@ -41,19 +40,18 @@ const SelectRegionModal: FC<ModalComponentProps> = ({
 				</DialogHeader>
 
 				<div className='grid grid-cols-4 gap-2 place-items-center max-h-96 overflow-auto'>
-					{filteredRegions.map((region) => (
+					{uniqueRegions.map((region) => (
 						<div
 							key={region}
 							className='flex justify-center items-center h-10 w-40'
 						>
 							<Checkbox
-								key={`checkbox-${region}`}
-								checked={selectedRegions.includes(region)}
+								checked={selectedRegionsSet.has(region)}
 								onCheckedChange={(checked) => {
 									handleRegionChange(region, !!checked);
 								}}
 							/>
-							<Label key={`input-${region}`} className='pl-1'>
+							<Label className='pl-1'>
 								{region}
 							</Label>
 						</div>
@@ -64,4 +62,4 @@ const SelectRegionModal: FC<ModalComponentProps> = ({
 	);
 };
 
-export default SelectRegionModal;
+export { SelectRegionDialog };
