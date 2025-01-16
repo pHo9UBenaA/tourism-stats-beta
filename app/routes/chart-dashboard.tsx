@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
+import { useFetcher, useLoaderData } from '@remix-run/react';
 import {
 	Select,
 	SelectContent,
@@ -10,13 +10,13 @@ import {
 	SelectValue,
 } from 'app/components/ui/select';
 import { Indexes, TabTitle } from 'app/constants/digital-tourism-stats';
-import {
-	fetchMunicipalityData,
-	fetchPrefectureData,
-} from 'app/data/digital/getData';
-import { DigitalTourismStats } from 'app/features/digital-tourism-stats-chart';
-import type { TabType } from 'app/types/digital-tourism-stats';
-import { useState } from 'react';
+import { fetchPrefectureData } from 'app/data/digital/getData';
+// import { DigitalTourismStats } from 'app/features/digital-tourism-stats-chart';
+import type {
+	DigitalRegionData,
+	TabType,
+} from 'app/types/digital-tourism-stats';
+import { lazy, useEffect, useState } from 'react';
 import {
 	Accordion,
 	AccordionContent,
@@ -25,10 +25,12 @@ import {
 } from '../components/ui/accordion';
 import { Tabs, TabsList, TabsTrigger } from '../components/ui/tabs';
 
+const DigitalTourismStats = lazy(
+	() => import('app/features/digital-tourism-stats-chart'),
+);
+
 export async function loader({ request }: LoaderFunctionArgs) {
-	const prefecture = await fetchPrefectureData();
-	const municipality = await fetchMunicipalityData();
-	return { prefecture, municipality };
+	return await fetchPrefectureData();
 }
 
 const isTab = (value: string): value is TabType => {
@@ -36,9 +38,16 @@ const isTab = (value: string): value is TabType => {
 };
 
 export default function ChartDashboard() {
-	const data = useLoaderData<typeof loader>();
+	const prefectureData = useLoaderData<typeof loader>();
+	const municipalityFetcher = useFetcher<DigitalRegionData[]>();
 
 	const [tab, setTab] = useState<TabType>(Indexes.prefecture);
+
+	useEffect(() => {
+		if (tab === Indexes.municipality && !municipalityFetcher.data) {
+			municipalityFetcher.load('/api/tourism-stats');
+		}
+	}, [tab, municipalityFetcher.data, municipalityFetcher.load]);
 
 	const onTabChange = (value: string) => {
 		if (isTab(value)) {
@@ -95,15 +104,15 @@ export default function ChartDashboard() {
 								</Tabs>
 							</div>
 
-							{/* TODO: <DigitalTourismStats chartData={data[tab]} groupBy={tab} /> */}
-							{tab === Indexes.prefecture && (
-								<DigitalTourismStats chartData={data[tab]} groupBy={tab} />
-							)}
-							{tab === Indexes.municipality && (
-								<DigitalTourismStats chartData={data[tab]} groupBy={tab} />
-							)}
+							<DigitalTourismStats
+								chartData={
+									tab === 'prefecture'
+										? prefectureData
+										: (municipalityFetcher.data ?? [])
+								}
+								groupBy={tab}
+							/>
 						</div>
-						{/* </div> */}
 					</AccordionContent>
 				</AccordionItem>
 			</Accordion>

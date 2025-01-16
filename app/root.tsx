@@ -1,4 +1,4 @@
-import type { LinksFunction, LoaderFunction } from '@remix-run/node';
+import type { LinksFunction, LoaderFunction, MetaFunction } from '@remix-run/node';
 import {
 	Links,
 	Meta,
@@ -33,6 +33,20 @@ export const links: LinksFunction = () => {
 		},
 	];
 };
+
+export const meta: MetaFunction = () => {
+	return [
+	  { title: "Japan Tourism Stats" },
+	  {
+		property: "og:title",
+		content: "JP tourism stats",
+	  },
+	  {
+		name: "description",
+		content: "This app is the best",
+	  },
+	];
+  };
 
 type LoaderData = {
 	theme: Theme | null;

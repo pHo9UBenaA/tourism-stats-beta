@@ -11,9 +11,9 @@ const selectedRegionsPrefectureAtom = atomWithStorage<
 	AtomKeys.selectedRegions[Indexes.prefecture],
 	DEFAULT_REGIONS[Indexes.prefecture],
 	undefined,
-	{
-		getOnInit: true,
-	},
+	// {
+	// 	getOnInit: true,
+	// },
 );
 
 export const useSelectedRegionsPrefecture = () =>
@@ -26,9 +26,9 @@ const selectedRegionsMunicipalityAtom = atomWithStorage<
 	AtomKeys.selectedRegions[Indexes.municipality],
 	DEFAULT_REGIONS[Indexes.municipality],
 	undefined,
-	{
-		getOnInit: true,
-	},
+	// {
+	// 	getOnInit: true,
+	// },
 );
 
 export const useSelectedRegionsMunicipality = () =>

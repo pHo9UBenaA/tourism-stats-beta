@@ -8,14 +8,14 @@ declare module '@remix-run/node' {
 	}
 }
 
-const getAlias = (): AliasOptions => {
-	if (process.env.NODE_ENV !== 'production') {
-		return {
-			'react-dom/client': 'react-dom/profiling',
-		};
-	}
-	return {};
-};
+// const getAlias = (): AliasOptions => {
+// 	if (process.env.NODE_ENV !== 'production') {
+// 		return {
+// 			'react-dom/client': 'react-dom/profiling',
+// 		};
+// 	}
+// 	return {};
+// };
 
 export default defineConfig({
 	plugins: [
@@ -30,7 +30,7 @@ export default defineConfig({
 		}),
 		tsconfigPaths(),
 	],
-	resolve: {
-		alias: getAlias(),
-	},
+	// resolve: {
+	// 	alias: getAlias(),
+	// },
 });

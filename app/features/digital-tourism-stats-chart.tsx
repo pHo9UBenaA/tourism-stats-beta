@@ -1,4 +1,4 @@
-import { LineChart } from 'app/components/line-chart';
+// import { LineChart } from 'app/components/line-chart';
 import { ToastAction } from 'app/components/ui/toast';
 import { UNIQUE_REGIONS } from 'app/constants/digital-tourism-stats';
 import { useSelectedRegions } from 'app/hooks/use-digital-tourism';
@@ -7,8 +7,10 @@ import type {
 	DigitalRegionData,
 	TabType,
 } from 'app/types/digital-tourism-stats';
-import { Profiler, useState } from 'react';
+import { lazy, useMemo } from 'react';
 import { SelectRegionDialog } from './select-region-dialog';
+
+const LineChart = lazy(() => import('app/components/line-chart'));
 
 type Props = {
 	chartData: DigitalRegionData[];
@@ -24,7 +26,13 @@ const extractData = (
 ) => {
 	const groupedDataArray: ExtractData = [];
 
-	for (const item of chartData) {
+	for (const item of chartData.filter((item) => {
+		const regionName =
+			groupBy === 'prefecture'
+				? item.prefectureName
+				: `${item.prefectureName}${item.regionName}`;
+		return selectedRegions.includes(regionName);
+	})) {
 		const itemMonth = String(item.month).padStart(2, '0');
 		const date = `${item.year}-${itemMonth}`;
 
@@ -33,21 +41,14 @@ const extractData = (
 				? item.prefectureName
 				: `${item.prefectureName}${item.regionName}`;
 
-		if (!selectedRegions.includes(regionName)) {
-			continue;
-		}
+		const index = groupedDataArray.findIndex((entry) => entry.date === date);
 
-		if (selectedRegions.includes(regionName)) {
-			const index = groupedDataArray.findIndex((entry) => entry.date === date);
-
-			if (index !== -1) {
-				groupedDataArray[index] = {
-					...groupedDataArray[index],
-					[regionName]: item.population,
-				};
-				continue;
-			}
-
+		if (index !== -1) {
+			groupedDataArray[index] = {
+				...groupedDataArray[index],
+				[regionName]: item.population,
+			};
+		} else {
 			groupedDataArray.push({
 				date,
 				[regionName]: item.population,
@@ -58,7 +59,7 @@ const extractData = (
 	return groupedDataArray;
 };
 
-export const DigitalTourismStats = ({ chartData, groupBy }: Props) => {
+const DigitalTourismStats = ({ chartData, groupBy }: Props) => {
 	const { toast } = useToast();
 
 	const showToast = (errorLength: number) => {
@@ -70,9 +71,9 @@ export const DigitalTourismStats = ({ chartData, groupBy }: Props) => {
 
 	const [selectedRegions, setSelectedRegions] = useSelectedRegions(groupBy);
 
-	const [currentChartData, setCurrentChartData] = useState<ExtractData>(
-		extractData(chartData, groupBy, selectedRegions),
-	);
+	const currentChartData = useMemo<ExtractData>(() => {
+		return extractData(chartData, groupBy, selectedRegions);
+	}, [chartData, groupBy, selectedRegions]);
 
 	const handleRegionChange = (
 		region: (typeof selectedRegions)[number],
@@ -90,24 +91,29 @@ export const DigitalTourismStats = ({ chartData, groupBy }: Props) => {
 			: selectedRegions.filter((r) => r !== region);
 
 		setSelectedRegions(newSelectedRegions);
-		setCurrentChartData(extractData(chartData, groupBy, newSelectedRegions));
+		// setCurrentChartData(extractData(chartData, groupBy, newSelectedRegions));
 	};
 
 	return (
 		<div>
-			<Profiler id='MyApp' onRender={() => {}}>
-				<SelectRegionDialog
-					uniqueRegions={UNIQUE_REGIONS[groupBy]}
-					selectedRegions={selectedRegions}
-					handleRegionChange={handleRegionChange}
-				/>
+			{/* <Profiler id='MyApp' onRender={() => {}}> */}
+			<SelectRegionDialog
+				key={`${groupBy}-select-region-dialog`}
+				uniqueRegions={UNIQUE_REGIONS[groupBy]}
+				selectedRegions={selectedRegions}
+				handleRegionChange={handleRegionChange}
+			/>
 
-				<LineChart
-					currentChartData={currentChartData}
-					selectedRegions={selectedRegions}
-					groupBy={groupBy}
-				/>
-			</Profiler>
+			<LineChart
+				key={`${groupBy}-line-chart`}
+				currentChartData={currentChartData}
+				selectedRegions={selectedRegions}
+				groupBy={groupBy}
+			/>
+			{/* </Profiler> */}
 		</div>
 	);
 };
+
+export default DigitalTourismStats;
+// export { DigitalTourismStats };
