@@ -12,8 +12,7 @@
 		"check": "biome check .",
 		"lint": "oxlint --tsconfig ./tsconfig.json",
 		"lint:fix": "oxlint --tsconfig ./tsconfig.json --fix --fix-suggestions",
-		"typecheck": "tsgo",
-		"typecheck:tsc": "tsc --noEmit"
+		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
 		"@tanstack/solid-router": "catalog:",
@@ -29,7 +28,6 @@
 		"@biomejs/biome": "catalog:",
 		"@tailwindcss/postcss": "catalog:",
 		"@types/node": "catalog:",
-		"@typescript/native-preview": "catalog:",
 		"combinate": "catalog:",
 		"oxlint": "catalog:",
 		"postcss": "catalog:",

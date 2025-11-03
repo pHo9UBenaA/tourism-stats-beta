@@ -8,7 +8,6 @@ catalog:
   '@tanstack/solid-router-devtools': ^1.133.31
   '@tanstack/solid-start': ^1.133.32
   '@types/node': ^24.9.1
-  '@typescript/native-preview': 7.0.0-dev.20251103.1
   combinate: ^1.1.11
   oxlint: 1.24.0
   postcss: ^8.5.6
