@@ -11,7 +11,7 @@
 		"format": "biome format --write .",
 		"check": "biome check .",
 		"lint": "oxlint --tsconfig ./tsconfig.json",
-		"lint:fix": "oxlint --tsconfig ./tsconfig.json --fix",
+		"lint:fix": "oxlint --tsconfig ./tsconfig.json --fix --fix-suggestions",
 		"typecheck": "tsgo",
 		"typecheck:tsc": "tsc --noEmit"
 	},
