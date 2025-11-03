@@ -1,6 +1,6 @@
 import { render } from "solid-js/web";
 
-import { DomesticTourismDashboard } from "../../app/components/DomesticTourismDashboard";
+import { DomesticTourismDashboard } from "../../app/features/domestic-tourism-dashboard/components/DomesticTourismDashboard";
 import "../../app/styles/app.css";
 
 render(

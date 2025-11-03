@@ -10,11 +10,11 @@ import {
 	REGION_LEVEL_MUNICIPALITY,
 	type DomesticTourismSelection,
 	type DomesticTourismSeries,
+	type DomesticTourismRow,
 	buildDomesticTourismQuery,
 	buildTargetOptionsQuery,
 	mapRowsToChartSeries,
-} from "../../src/types/domestic-tourism";
-import type { DomesticTourismRow } from "../../src/types/domestic-tourism";
+} from "../features/domestic-tourism-dashboard/types";
 import type { FetchResult } from "../../src/types/fetch";
 
 const REGISTERED_JSON_FILES = [

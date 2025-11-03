@@ -3,6 +3,8 @@
 t_wadaのTDDで、YAGNIの原則に従い、Baby stepsでペアプロを行ってください。
 `pnpm run format`, `pnpm run lint` はこまめに実施してください。
 
+タスクの終了前に chrome-devtools-mcp を活用し、アドホックな形でアプリをテストしてください。
+
 また、常に以下に従ってください。
 
 ## Always: FP

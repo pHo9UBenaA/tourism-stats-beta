@@ -6,7 +6,7 @@ import {
 	buildDomesticTourismQuery,
 	buildTargetOptionsQuery,
 	mapRowsToChartSeries,
-} from "../src/types/domestic-tourism";
+} from "../app/features/domestic-tourism-dashboard/types";
 
 describe("buildDomesticTourismQuery", () => {
 	it("creates a prefecture-level query that aggregates monthly population", () => {

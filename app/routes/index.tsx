@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/solid-router";
-import { DomesticTourismDashboard } from "~/components/DomesticTourismDashboard";
+import { DomesticTourismDashboard } from "~/features/domestic-tourism-dashboard/components/DomesticTourismDashboard";
 
 export const Route = createFileRoute("/")({
 	component: Home,
