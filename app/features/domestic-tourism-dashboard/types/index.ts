@@ -12,6 +12,8 @@ export {
 	type TargetOptionsArgs,
 } from "./selection";
 
+export { toggleSelectionTarget, describeSelectionList } from "./selectionList";
+
 export {
 	buildDomesticTourismQuery,
 	buildTargetOptionsQuery,

@@ -12,4 +12,6 @@ export {
 	buildDomesticTourismQuery,
 	buildTargetOptionsQuery,
 	mapRowsToChartSeries,
+	toggleSelectionTarget,
+	describeSelectionList,
 } from "../../app/features/domestic-tourism-dashboard/types";

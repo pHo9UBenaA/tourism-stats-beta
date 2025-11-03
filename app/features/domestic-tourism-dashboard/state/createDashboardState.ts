@@ -16,7 +16,10 @@ import {
 import {
 	REGION_LEVEL_MUNICIPALITY,
 	REGION_LEVEL_PREFECTURE,
+	describeSelectionList,
+	toggleSelectionTarget,
 	type DomesticTourismSelection,
+	type DomesticTourismSeries,
 	type RegionLevel,
 } from "../types";
 import {
@@ -53,21 +56,94 @@ type DashboardState = {
 	municipalityOptions: Accessor<OptionsState>;
 	chartState: Accessor<ChartState>;
 	selectedLevel: Accessor<RegionLevel>;
-	selectedPrefecture: Accessor<string | null>;
-	selectedMunicipality: Accessor<string | null>;
+	focusedPrefecture: Accessor<string | null>;
+	selectedPrefectures: Accessor<string[]>;
+	selectedMunicipalitiesForFocus: Accessor<string[]>;
 	isModalOpen: Accessor<boolean>;
 	setSelectedLevel: (value: RegionLevel) => void;
-	setSelectedPrefecture: (value: string | null) => void;
-	setSelectedMunicipality: (value: string | null) => void;
 	selectPrefectureLevel: () => void;
 	selectMunicipalityLevel: () => void;
 	openModal: () => void;
 	closeModal: () => void;
-	selection: Accessor<DomesticTourismSelection | null>;
+	togglePrefectureSelection: (value: string) => void;
+	focusPrefecture: (value: string) => void;
+	toggleMunicipalitySelection: (value: string) => void;
+	selections: Accessor<DomesticTourismSelection[]>;
 	chartOption: Accessor<EChartsOption | null>;
 	selectedLevelLabel: Accessor<string>;
 	currentTargetLabel: Accessor<string | null>;
 };
+
+const DEFAULT_MULTI_SERIES_TITLE = "Selected Regions";
+const CHART_GRID_PADDING = {
+	left: 48,
+	right: 16,
+	top: 72,
+	bottom: 56,
+} as const;
+const AXIS_LABEL_ROTATION_DEGREES = 35;
+const SERIES_TYPE_LINE = "line";
+const TOOLTIP_TRIGGER_AXIS = "axis";
+const Y_AXIS_LABEL = "Population";
+
+type ChartOptionArgs = {
+	series: DomesticTourismSeries[];
+	title: string;
+};
+
+function sortPeriods(periods: string[]) {
+	return [...periods].sort((left, right) =>
+		left < right ? -1 : left > right ? 1 : 0,
+	);
+}
+
+function buildSeriesData(periods: string[], series: DomesticTourismSeries) {
+	const pointIndex = new Map(
+		series.points.map((point) => [point.period, point.population]),
+	);
+	return periods.map((period) => pointIndex.get(period) ?? null);
+}
+
+function buildChartOption({ series, title }: ChartOptionArgs): EChartsOption {
+	const periodSet = new Set<string>();
+	series.forEach((entry) => {
+		entry.points.forEach((point) => {
+			periodSet.add(point.period);
+		});
+	});
+
+	const periods = sortPeriods(Array.from(periodSet));
+	const shouldFillArea = series.length === 1;
+
+	return {
+		title: {
+			text: title,
+			left: "center",
+		},
+		tooltip: {
+			trigger: TOOLTIP_TRIGGER_AXIS,
+		},
+		grid: { ...CHART_GRID_PADDING },
+		xAxis: {
+			type: "category",
+			data: periods,
+			axisLabel: {
+				rotate: AXIS_LABEL_ROTATION_DEGREES,
+			},
+		},
+		yAxis: {
+			type: "value",
+			name: Y_AXIS_LABEL,
+		},
+		series: series.map((entry) => ({
+			name: entry.label,
+			type: SERIES_TYPE_LINE,
+			smooth: true,
+			data: buildSeriesData(periods, entry),
+			...(shouldFillArea ? { areaStyle: {} } : {}),
+		})),
+	};
+}
 
 /**
  * Compose feature state and derived view models for the dashboard.
@@ -90,12 +166,12 @@ export function createDomesticTourismDashboardState(): DashboardState {
 	const [selectedLevel, setSelectedLevel] = createSignal<RegionLevel>(
 		REGION_LEVEL_PREFECTURE,
 	);
-	const [selectedPrefecture, setSelectedPrefecture] = createSignal<
-		string | null
-	>(null);
-	const [selectedMunicipality, setSelectedMunicipality] = createSignal<
-		string | null
-	>(null);
+	const [focusedPrefecture, setFocusedPrefecture] = createSignal<string | null>(
+		null,
+	);
+	const [selectedTargets, setSelectedTargets] = createSignal<
+		DomesticTourismSelection[]
+	>([]);
 	const [chartState, setChartState] =
 		createSignal<ChartState>(DEFAULT_CHART_STATE);
 	const [isModalOpen, setIsModalOpen] = createSignal(false);
@@ -155,7 +231,13 @@ export function createDomesticTourismDashboardState(): DashboardState {
 					error: null,
 					items: result.data,
 				});
-				setSelectedPrefecture((previous) => previous ?? first);
+				setFocusedPrefecture((previous) => {
+					if (previous && result.data.includes(previous)) {
+						return previous;
+					}
+
+					return first;
+				});
 			} else {
 				setPrefectureOptions({
 					loading: false,
@@ -177,8 +259,9 @@ export function createDomesticTourismDashboardState(): DashboardState {
 			return;
 		}
 
-		const prefectureName = selectedPrefecture();
+		const prefectureName = focusedPrefecture();
 		if (!prefectureName) {
+			setMunicipalityOptions(EMPTY_OPTIONS_STATE);
 			return;
 		}
 
@@ -201,13 +284,11 @@ export function createDomesticTourismDashboardState(): DashboardState {
 			}
 
 			if (result.ok) {
-				const first = result.data.at(0) ?? null;
 				setMunicipalityOptions({
 					loading: false,
 					error: null,
 					items: result.data,
 				});
-				setSelectedMunicipality((previous) => previous ?? first);
 			} else {
 				setMunicipalityOptions({
 					loading: false,
@@ -222,36 +303,41 @@ export function createDomesticTourismDashboardState(): DashboardState {
 		});
 	});
 
-	const selection = createMemo<DomesticTourismSelection | null>(() => {
-		const prefectureName = selectedPrefecture();
-		if (!prefectureName) {
-			return null;
-		}
-
-		if (selectedLevel() === REGION_LEVEL_PREFECTURE) {
-			return {
-				level: REGION_LEVEL_PREFECTURE,
-				targetName: prefectureName,
-			};
-		}
-
-		const municipalityName = selectedMunicipality();
-		if (!municipalityName) {
-			return null;
-		}
-
-		return {
-			level: REGION_LEVEL_MUNICIPALITY,
-			targetName: municipalityName,
-			prefectureName,
-		};
+	const selections = createMemo(() => {
+		const level = selectedLevel();
+		return selectedTargets().filter((entry) => entry.level === level);
 	});
+
+	const selectedPrefectures = createMemo(() =>
+		selectedTargets()
+			.filter((entry) => entry.level === REGION_LEVEL_PREFECTURE)
+			.map((entry) => entry.targetName),
+	);
+
+	const selectedMunicipalitiesForFocus = createMemo(() => {
+		const focus = focusedPrefecture();
+		if (!focus) {
+			return [];
+		}
+
+		return selectedTargets()
+			.filter(
+				(entry) =>
+					entry.level === REGION_LEVEL_MUNICIPALITY &&
+					entry.prefectureName === focus,
+			)
+			.map((entry) => entry.targetName);
+	});
+
+	const selectionSummary = createMemo(() =>
+		describeSelectionList(selections()),
+	);
 
 	createEffect(() => {
 		const database = databaseState();
-		const currentSelection = selection();
+		const activeSelections = selections();
 
-		if (!database || !currentSelection) {
+		if (!database || activeSelections.length === 0) {
 			setChartState(DEFAULT_CHART_STATE);
 			return;
 		}
@@ -264,14 +350,32 @@ export function createDomesticTourismDashboardState(): DashboardState {
 		let active = true;
 
 		(async () => {
-			const result = await queryTourismSeries(database.db, currentSelection);
+			const results = await Promise.all(
+				activeSelections.map((selection) =>
+					queryTourismSeries(database.db, selection),
+				),
+			);
+
 			if (!active) {
 				return;
 			}
 
+			const failure = results.find((result) => !result.ok);
+			if (failure && !failure.ok) {
+				setChartState({
+					loading: false,
+					data: { ok: false, error: failure.error },
+				});
+				return;
+			}
+
+			const seriesList = results.flatMap((result) =>
+				result.ok ? [result.data] : [],
+			);
+
 			setChartState({
 				loading: false,
-				data: result,
+				data: { ok: true, data: seriesList },
 			});
 		})();
 
@@ -286,37 +390,18 @@ export function createDomesticTourismDashboardState(): DashboardState {
 			return null;
 		}
 
-		const points = result.data.points;
+		const summary = selectionSummary() ?? "";
+		const title =
+			summary.length > 0
+				? summary
+				: result.data.length === 1
+					? (result.data[0]?.label ?? DEFAULT_MULTI_SERIES_TITLE)
+					: DEFAULT_MULTI_SERIES_TITLE;
 
-		return {
-			title: {
-				text: result.data.label,
-				left: "center",
-			},
-			tooltip: {
-				trigger: "axis",
-			},
-			grid: { left: 48, right: 16, top: 72, bottom: 56 },
-			xAxis: {
-				type: "category",
-				data: points.map((point) => point.period),
-				axisLabel: {
-					rotate: 35,
-				},
-			},
-			yAxis: {
-				type: "value",
-				name: "Population",
-			},
-			series: [
-				{
-					type: "line",
-					smooth: true,
-					data: points.map((point) => point.population),
-					areaStyle: {},
-				},
-			],
-		};
+		return buildChartOption({
+			series: result.data,
+			title,
+		});
 	});
 
 	const selectedLevelLabel = createMemo(() =>
@@ -326,25 +411,42 @@ export function createDomesticTourismDashboardState(): DashboardState {
 	);
 
 	const currentTargetLabel = createMemo(() => {
-		if (selectedLevel() === REGION_LEVEL_PREFECTURE) {
-			return selectedPrefecture();
-		}
-
-		const prefecture = selectedPrefecture();
-		const municipality = selectedMunicipality();
-		return prefecture && municipality
-			? `${prefecture} / ${municipality}`
-			: null;
+		const summary = selectionSummary();
+		return summary && summary.length > 0 ? summary : null;
 	});
 
 	const openModal = () => setIsModalOpen(true);
 	const closeModal = () => setIsModalOpen(false);
 	const selectPrefectureLevel = () => {
 		setSelectedLevel(REGION_LEVEL_PREFECTURE);
-		setSelectedMunicipality(null);
 	};
 	const selectMunicipalityLevel = () => {
 		setSelectedLevel(REGION_LEVEL_MUNICIPALITY);
+	};
+	const togglePrefectureSelection = (value: string) => {
+		setSelectedTargets((current) =>
+			toggleSelectionTarget(current, {
+				level: REGION_LEVEL_PREFECTURE,
+				targetName: value,
+			}),
+		);
+	};
+	const focusPrefecture = (value: string) => {
+		setFocusedPrefecture(value);
+	};
+	const toggleMunicipalitySelection = (value: string) => {
+		const focus = focusedPrefecture();
+		if (!focus) {
+			return;
+		}
+
+		setSelectedTargets((current) =>
+			toggleSelectionTarget(current, {
+				level: REGION_LEVEL_MUNICIPALITY,
+				targetName: value,
+				prefectureName: focus,
+			}),
+		);
 	};
 
 	return {
@@ -355,17 +457,19 @@ export function createDomesticTourismDashboardState(): DashboardState {
 		municipalityOptions,
 		chartState,
 		selectedLevel,
-		selectedPrefecture,
-		selectedMunicipality,
+		focusedPrefecture,
+		selectedPrefectures,
+		selectedMunicipalitiesForFocus,
 		isModalOpen,
 		setSelectedLevel,
-		setSelectedPrefecture,
-		setSelectedMunicipality,
 		selectPrefectureLevel,
 		selectMunicipalityLevel,
 		openModal,
 		closeModal,
-		selection,
+		togglePrefectureSelection,
+		focusPrefecture,
+		toggleMunicipalitySelection,
+		selections,
 		chartOption,
 		selectedLevelLabel,
 		currentTargetLabel,

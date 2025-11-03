@@ -9,6 +9,7 @@ type OptionsListProps = {
 	state: OptionsState;
 	onSelect: (value: string) => void;
 	selectedValue?: string | null;
+	selectedValues?: string[];
 };
 
 const OPTION_LOADING_TEXT = "Loading options…";
@@ -21,6 +22,18 @@ export function OptionsList(props: OptionsListProps) {
 	const isLoading = () => props.state.loading;
 	const hasError = () => props.state.error !== null;
 	const hasItems = () => props.state.items.length > 0;
+
+	const isActiveValue = (value: string) => {
+		if (props.selectedValues && props.selectedValues.includes(value)) {
+			return true;
+		}
+
+		if (props.selectedValue !== undefined && props.selectedValue !== null) {
+			return props.selectedValue === value;
+		}
+
+		return false;
+	};
 
 	return (
 		<div class="flex min-h-56 flex-col gap-3 rounded-md border border-gray-200 p-3 dark:border-gray-700">
@@ -46,13 +59,13 @@ export function OptionsList(props: OptionsListProps) {
 				<ul class="flex max-h-64 flex-col gap-2 overflow-y-auto">
 					<For each={props.state.items}>
 						{(item) => {
-							const isActive = () => props.selectedValue === item;
+							const active = () => isActiveValue(item);
 							return (
 								<li>
 									<button
 										type="button"
 										class={`w-full rounded-md px-3 py-2 text-left text-sm transition ${
-											isActive()
+											active()
 												? "bg-blue-600 text-white shadow"
 												: "border border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
 										}`}

@@ -12,7 +12,7 @@ export type OptionsState = {
 
 export type ChartState = {
 	loading: boolean;
-	data: FetchResult<DomesticTourismSeries, string> | null;
+	data: FetchResult<DomesticTourismSeries[], string> | null;
 };
 
 export type DashboardSelection = {

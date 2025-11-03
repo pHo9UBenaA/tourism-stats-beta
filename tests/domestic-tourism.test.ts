@@ -6,6 +6,8 @@ import {
 	buildDomesticTourismQuery,
 	buildTargetOptionsQuery,
 	mapRowsToChartSeries,
+	toggleSelectionTarget,
+	describeSelectionList,
 } from "../app/features/domestic-tourism-dashboard/types";
 
 describe("buildDomesticTourismQuery", () => {
@@ -64,6 +66,98 @@ describe("mapRowsToChartSeries", () => {
 			{ period: "2023-01", population: 5 },
 			{ period: "2023-02", population: 10 },
 		]);
+	});
+});
+
+describe("toggleSelectionTarget", () => {
+	it("adds a new prefecture selection when it does not exist", () => {
+		const current = [];
+		const updated = toggleSelectionTarget(current, {
+			level: REGION_LEVEL_PREFECTURE,
+			targetName: "北海道",
+		});
+
+		expect(updated).toEqual([
+			{
+				level: REGION_LEVEL_PREFECTURE,
+				targetName: "北海道",
+			},
+		]);
+	});
+
+	it("removes an existing municipality selection when toggled again", () => {
+		const current = [
+			{
+				level: REGION_LEVEL_MUNICIPALITY,
+				targetName: "札幌市中央区",
+				prefectureName: "北海道",
+			},
+		];
+		const updated = toggleSelectionTarget(current, {
+			level: REGION_LEVEL_MUNICIPALITY,
+			targetName: "札幌市中央区",
+			prefectureName: "北海道",
+		});
+
+		expect(updated).toEqual([]);
+	});
+
+	it("preserves other selections when toggling a single entry", () => {
+		const current = [
+			{
+				level: REGION_LEVEL_PREFECTURE,
+				targetName: "北海道",
+			},
+			{
+				level: REGION_LEVEL_PREFECTURE,
+				targetName: "青森県",
+			},
+		];
+		const updated = toggleSelectionTarget(current, {
+			level: REGION_LEVEL_PREFECTURE,
+			targetName: "北海道",
+		});
+
+		expect(updated).toEqual([
+			{
+				level: REGION_LEVEL_PREFECTURE,
+				targetName: "青森県",
+			},
+		]);
+	});
+});
+
+describe("describeSelectionList", () => {
+	it("returns null when no selections exist", () => {
+		const label = describeSelectionList([]);
+		expect(label).toBeNull();
+	});
+
+	it("formats prefecture selections joined by comma", () => {
+		const label = describeSelectionList([
+			{
+				level: REGION_LEVEL_PREFECTURE,
+				targetName: "北海道",
+			},
+			{
+				level: REGION_LEVEL_PREFECTURE,
+				targetName: "青森県",
+			},
+		]);
+
+		expect(label).toBe("北海道, 青森県");
+	});
+
+	it("formats municipality selections with prefecture context", () => {
+		const label = describeSelectionList([
+			{
+				level: REGION_LEVEL_MUNICIPALITY,
+				targetName: "札幌市中央区",
+				prefectureName: "北海道",
+			},
+		]);
+
+		expect(label).toBe("北海道 / 札幌市中央区");
 	});
 });
 

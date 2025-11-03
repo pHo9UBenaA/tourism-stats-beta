@@ -3,7 +3,7 @@
  */
 import { Show } from "solid-js";
 
-import { REGION_LEVEL_PREFECTURE, type RegionLevel } from "../types";
+import { REGION_LEVEL_PREFECTURE } from "../types";
 import { ChartSection } from "./ChartSection";
 import { RegionSelectionControls } from "./RegionSelectionControls";
 import { RegionSelectionModal } from "./RegionSelectionModal";
@@ -15,10 +15,6 @@ const HEADING_DESCRIPTION =
 const DATABASE_LOADING_MESSAGE =
 	"Initialising DuckDB and loading JSON datasets…";
 
-function shouldCloseAfterPrefectureSelect(level: RegionLevel) {
-	return level === REGION_LEVEL_PREFECTURE;
-}
-
 /**
  * Compose UI for exploring domestic tourism metrics.
  */
@@ -26,16 +22,17 @@ export function DomesticTourismDashboard() {
 	const state = createDomesticTourismDashboardState();
 
 	const handlePrefectureSelect = (value: string) => {
-		state.setSelectedPrefecture(value);
-		state.setSelectedMunicipality(null);
-		if (shouldCloseAfterPrefectureSelect(state.selectedLevel())) {
-			state.closeModal();
+		if (state.selectedLevel() === REGION_LEVEL_PREFECTURE) {
+			state.togglePrefectureSelection(value);
+			state.focusPrefecture(value);
+			return;
 		}
+
+		state.focusPrefecture(value);
 	};
 
 	const handleMunicipalitySelect = (value: string) => {
-		state.setSelectedMunicipality(value);
-		state.closeModal();
+		state.toggleMunicipalitySelection(value);
 	};
 
 	return (
@@ -83,8 +80,9 @@ export function DomesticTourismDashboard() {
 					selectedLevelLabel={state.selectedLevelLabel}
 					prefectureOptions={state.prefectureOptions}
 					municipalityOptions={state.municipalityOptions}
-					selectedPrefecture={state.selectedPrefecture}
-					selectedMunicipality={state.selectedMunicipality}
+					selectedPrefectures={state.selectedPrefectures}
+					focusedPrefecture={state.focusedPrefecture}
+					selectedMunicipalities={state.selectedMunicipalitiesForFocus}
 					onSelectPrefecture={handlePrefectureSelect}
 					onSelectMunicipality={handleMunicipalitySelect}
 					onClose={state.closeModal}

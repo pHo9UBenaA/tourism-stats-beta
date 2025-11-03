@@ -16,8 +16,9 @@ type RegionSelectionModalProps = {
 	selectedLevelLabel: Accessor<string>;
 	prefectureOptions: Accessor<OptionsState>;
 	municipalityOptions: Accessor<OptionsState>;
-	selectedPrefecture: Accessor<string | null>;
-	selectedMunicipality: Accessor<string | null>;
+	selectedPrefectures: Accessor<string[]>;
+	focusedPrefecture: Accessor<string | null>;
+	selectedMunicipalities: Accessor<string[]>;
 	onSelectPrefecture: (value: string) => void;
 	onSelectMunicipality: (value: string) => void;
 	onClose: () => void;
@@ -57,6 +58,7 @@ export function RegionSelectionModal(props: RegionSelectionModalProps) {
 					<OptionsList
 						state={props.prefectureOptions()}
 						onSelect={props.onSelectPrefecture}
+						selectedValues={props.selectedPrefectures()}
 					/>
 				</Show>
 
@@ -68,7 +70,7 @@ export function RegionSelectionModal(props: RegionSelectionModalProps) {
 							</h3>
 							<OptionsList
 								state={props.prefectureOptions()}
-								selectedValue={props.selectedPrefecture()}
+								selectedValue={props.focusedPrefecture()}
 								onSelect={props.onSelectPrefecture}
 							/>
 						</div>
@@ -79,7 +81,7 @@ export function RegionSelectionModal(props: RegionSelectionModalProps) {
 							</h3>
 							<OptionsList
 								state={props.municipalityOptions()}
-								selectedValue={props.selectedMunicipality()}
+								selectedValues={props.selectedMunicipalities()}
 								onSelect={props.onSelectMunicipality}
 							/>
 						</div>
