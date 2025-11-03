@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/solid-router";
-import { CustomMessage } from "~/components/CustomMessage";
+import { DomesticTourismDashboard } from "~/components/DomesticTourismDashboard";
 
 export const Route = createFileRoute("/")({
 	component: Home,
@@ -7,9 +7,8 @@ export const Route = createFileRoute("/")({
 
 function Home() {
 	return (
-		<div class="p-2">
-			<h3>Welcome Home!!!</h3>
-			<CustomMessage message="Hello from a custom component!" />
-		</div>
+		<main class="mx-auto flex max-w-5xl flex-col gap-8 p-4 md:p-8">
+			<DomesticTourismDashboard />
+		</main>
 	);
 }

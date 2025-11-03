@@ -1,5 +1,5 @@
 import { createRootRoute, Link, Outlet } from "@tanstack/solid-router";
-import { TanStackRouterDevtools } from "@tanstack/solid-router-devtools";
+import { Show, lazy } from "solid-js";
 import { NotFound } from "~/components/NotFound";
 import appCss from "~/styles/app.css?url";
 import { seo } from "~/utils/seo";
@@ -46,6 +46,15 @@ export const Route = createRootRoute({
 });
 
 function RootComponent() {
+	const shouldRenderDevtools =
+		typeof window !== "undefined" && import.meta.env.DEV;
+	const RouterDevtools = shouldRenderDevtools
+		? lazy(async () => {
+				const mod = await import("@tanstack/solid-router-devtools");
+				return { default: mod.TanStackRouterDevtools };
+		  })
+		: null;
+
 	return (
 		<>
 			<div class="p-2 flex gap-2 text-lg">
@@ -117,7 +126,9 @@ function RootComponent() {
 				</Link>
 			</div>
 			<Outlet />
-			<TanStackRouterDevtools position="bottom-right" />
+			<Show when={shouldRenderDevtools && RouterDevtools}>
+				<RouterDevtools position="bottom-right" />
+			</Show>
 		</>
 	);
 }

@@ -8,6 +8,7 @@
 		"dev:e2e": "vinxi dev",
 		"build": "vinxi build",
 		"start": "vinxi start",
+		"test": "vitest run",
 		"format": "biome format --write .",
 		"check": "biome check .",
 		"lint": "oxlint --tsconfig ./tsconfig.json",
@@ -15,9 +16,12 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
+		"@duckdb/duckdb-wasm": "catalog:",
 		"@tanstack/solid-router": "catalog:",
 		"@tanstack/solid-router-devtools": "catalog:",
 		"@tanstack/solid-start": "catalog:",
+		"echarts": "catalog:",
+		"echarts-solid": "catalog:",
 		"redaxios": "catalog:",
 		"solid-js": "catalog:",
 		"tailwind-merge": "catalog:",
@@ -33,7 +37,9 @@
 		"postcss": "catalog:",
 		"tailwindcss": "catalog:",
 		"typescript": "catalog:",
+		"vitest": "catalog:",
 		"vite-plugin-solid": "catalog:",
-		"vite-tsconfig-paths": "catalog:"
+		"vite-tsconfig-paths": "catalog:",
+		"vite": "catalog:"
 	}
 }
