@@ -11,6 +11,7 @@ import {
 	createSignal,
 	onCleanup,
 	onMount,
+	type JSX,
 } from "solid-js";
 
 import {
@@ -52,15 +53,8 @@ const DEFAULT_CHART_STATE: ChartState = {
 /**
  * Domestic tourism dashboard backed by DuckDB WASM.
  */
-export function DomesticTourismDashboard() {
-	if (typeof window === "undefined") {
-		return (
-			<div class="rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300">
-				Loading domestic tourism dashboard…
-			</div>
-		);
-	}
 
+export function DomesticTourismDashboard() {
 	const [databaseState, setDatabaseState] = createSignal<Awaited<
 		ReturnType<typeof createTourismDatabase>
 	> | null>(null);
