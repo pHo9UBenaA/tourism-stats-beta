@@ -5,10 +5,12 @@ import {
 	REGION_LEVEL_PREFECTURE,
 	buildDomesticTourismQuery,
 	buildTargetOptionsQuery,
+	createTourismPeriod,
+	describeSelectionList,
+	formatTourismPeriod,
 	mapRowsToChartSeries,
 	toggleSelectionTarget,
-	describeSelectionList,
-} from "../app/features/domestic-tourism-dashboard/types";
+} from "../src/types/domestic-tourism";
 
 describe("buildDomesticTourismQuery", () => {
 	it("creates a prefecture-level query that aggregates monthly population", () => {
@@ -46,14 +48,12 @@ describe("mapRowsToChartSeries", () => {
 		const series = mapRowsToChartSeries({
 			rows: [
 				{
-					year: 2023,
-					month: 2,
+					period: createTourismPeriod(2023, 2),
 					targetName: "北海道",
 					population: 10,
 				},
 				{
-					year: 2023,
-					month: 1,
+					period: createTourismPeriod(2023, 1),
 					targetName: "北海道",
 					population: 5,
 				},
@@ -62,7 +62,12 @@ describe("mapRowsToChartSeries", () => {
 		});
 
 		expect(series.label).toBe("北海道");
-		expect(series.points).toEqual([
+		expect(
+			series.points.map((point) => ({
+				period: formatTourismPeriod(point.period),
+				population: point.population,
+			})),
+		).toEqual([
 			{ period: "2023-01", population: 5 },
 			{ period: "2023-02", population: 10 },
 		]);

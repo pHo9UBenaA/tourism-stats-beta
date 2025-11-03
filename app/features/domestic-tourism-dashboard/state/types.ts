@@ -1,22 +1,16 @@
 /**
  * @file Shared state primitives for the domestic tourism dashboard feature.
  */
-import type { FetchResult } from "../../../../src/types/fetch";
-import type { DomesticTourismSeries } from "../types";
+import type { DomesticTourismSeries } from "../../../../src/types/domestic-tourism";
 
-export type OptionsState = {
-	loading: boolean;
-	error: string | null;
-	items: string[];
-};
+export type OptionsState =
+	| { kind: "idle" }
+	| { kind: "loading" }
+	| { kind: "error"; message: string }
+	| { kind: "ready"; items: string[] };
 
-export type ChartState = {
-	loading: boolean;
-	data: FetchResult<DomesticTourismSeries[], string> | null;
-};
-
-export type DashboardSelection = {
-	level: string;
-	prefecture: string | null;
-	municipality: string | null;
-};
+export type ChartState =
+	| { kind: "idle" }
+	| { kind: "loading" }
+	| { kind: "error"; message: string }
+	| { kind: "ready"; series: DomesticTourismSeries[] };

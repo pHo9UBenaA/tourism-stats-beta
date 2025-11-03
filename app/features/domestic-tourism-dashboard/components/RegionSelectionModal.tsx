@@ -7,85 +7,62 @@ import {
 	REGION_LEVEL_MUNICIPALITY,
 	REGION_LEVEL_PREFECTURE,
 	type RegionLevel,
-} from "../types";
+} from "../../../../src/types/domestic-tourism";
 import type { OptionsState } from "../state/types";
-import { OptionsList } from "./OptionsList";
+import { PrefectureSelectionPanel } from "./PrefectureSelectionPanel";
+import { MunicipalitySelectionPanel } from "./MunicipalitySelectionPanel";
+import { RegionSelectionModalHeader } from "./RegionSelectionModalHeader";
 
 type RegionSelectionModalProps = {
-	selectedLevel: Accessor<RegionLevel>;
-	selectedLevelLabel: Accessor<string>;
-	prefectureOptions: Accessor<OptionsState>;
-	municipalityOptions: Accessor<OptionsState>;
-	selectedPrefectures: Accessor<string[]>;
-	focusedPrefecture: Accessor<string | null>;
-	selectedMunicipalities: Accessor<string[]>;
-	onSelectPrefecture: (value: string) => void;
-	onSelectMunicipality: (value: string) => void;
-	onClose: () => void;
+	readonly selectedLevel: Accessor<RegionLevel>;
+	readonly selectedLevelLabel: Accessor<string>;
+	readonly prefectureOptions: Accessor<OptionsState>;
+	readonly municipalityOptions: Accessor<OptionsState>;
+	readonly selectedPrefectures: Accessor<string[]>;
+	readonly focusedPrefecture: Accessor<string | null>;
+	readonly selectedMunicipalities: Accessor<string[]>;
+	readonly onSelectPrefecture: (value: string) => void;
+	readonly onSelectMunicipality: (value: string) => void;
+	readonly onClose: () => void;
 };
 
-const CLOSE_LABEL = "Close";
-const PREFECTURE_HEADING = "Prefecture";
-const MUNICIPALITY_HEADING = "Municipality";
+function buildDescription(label: string) {
+	return `Update the chart by choosing a ${label.toLowerCase()}.`;
+}
 
 /**
  * Render region lists inside a modal overlay.
  */
 export function RegionSelectionModal(props: RegionSelectionModalProps) {
+	const heading = () => `Select ${props.selectedLevelLabel()}`;
+	const description = () => buildDescription(props.selectedLevelLabel());
+
 	return (
 		<div class="fixed inset-0 z-40 flex items-center justify-center bg-black/60 p-4">
 			<div class="w-full max-w-2xl rounded-lg border border-gray-200 bg-white p-6 shadow-lg dark:border-gray-700 dark:bg-gray-900">
-				<header class="mb-4 flex items-start justify-between">
-					<div>
-						<h2 class="text-lg font-semibold">
-							Select {props.selectedLevelLabel()}
-						</h2>
-						<p class="text-xs text-gray-500 dark:text-gray-400">
-							Update the chart by choosing a{" "}
-							{props.selectedLevelLabel().toLowerCase()}.
-						</p>
-					</div>
-					<button
-						type="button"
-						class="rounded-md border border-gray-300 px-2 py-1 text-sm text-gray-600 transition hover:bg-gray-100 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-gray-800"
-						onClick={props.onClose}
-					>
-						{CLOSE_LABEL}
-					</button>
-				</header>
+				<RegionSelectionModalHeader
+					heading={heading()}
+					description={description()}
+					onClose={props.onClose}
+				/>
 
 				<Show when={props.selectedLevel() === REGION_LEVEL_PREFECTURE}>
-					<OptionsList
-						state={props.prefectureOptions()}
+					<PrefectureSelectionPanel
+						options={props.prefectureOptions()}
+						selectedPrefectures={props.selectedPrefectures()}
 						onSelect={props.onSelectPrefecture}
-						selectedValues={props.selectedPrefectures()}
 					/>
 				</Show>
 
 				<Show when={props.selectedLevel() === REGION_LEVEL_MUNICIPALITY}>
-					<div class="grid gap-4 md:grid-cols-2">
-						<div class="flex flex-col gap-2">
-							<h3 class="text-sm font-medium text-gray-600 dark:text-gray-300">
-								{PREFECTURE_HEADING}
-							</h3>
-							<OptionsList
-								state={props.prefectureOptions()}
-								selectedValue={props.focusedPrefecture()}
-								onSelect={props.onSelectPrefecture}
-							/>
-						</div>
-
-						<div class="flex flex-col gap-2">
-							<h3 class="text-sm font-medium text-gray-600 dark:text-gray-300">
-								{MUNICIPALITY_HEADING}
-							</h3>
-							<OptionsList
-								state={props.municipalityOptions()}
-								selectedValues={props.selectedMunicipalities()}
-								onSelect={props.onSelectMunicipality}
-							/>
-						</div>
-					</div>
+					<MunicipalitySelectionPanel
+						prefectureOptions={props.prefectureOptions()}
+						municipalityOptions={props.municipalityOptions()}
+						focusedPrefecture={props.focusedPrefecture()}
+						selectedMunicipalities={props.selectedMunicipalities()}
+						onSelectPrefecture={props.onSelectPrefecture}
+						onSelectMunicipality={props.onSelectMunicipality}
+					/>
 				</Show>
 			</div>
 		</div>

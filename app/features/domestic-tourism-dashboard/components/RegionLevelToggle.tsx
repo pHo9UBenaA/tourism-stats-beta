@@ -3,7 +3,10 @@
  */
 import type { Accessor } from "solid-js";
 
-import { REGION_LEVEL_PREFECTURE, type RegionLevel } from "../types";
+import {
+	REGION_LEVEL_PREFECTURE,
+	type RegionLevel,
+} from "../../../../src/types/domestic-tourism";
 
 type RegionLevelToggleProps = {
 	selectedLevel: Accessor<RegionLevel>;

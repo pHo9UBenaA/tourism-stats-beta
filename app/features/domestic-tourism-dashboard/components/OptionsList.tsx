@@ -19,9 +19,12 @@ const OPTION_EMPTY_TEXT = "No entries available.";
  * Render a selectable list of region names.
  */
 export function OptionsList(props: OptionsListProps) {
-	const isLoading = () => props.state.loading;
-	const hasError = () => props.state.error !== null;
-	const hasItems = () => props.state.items.length > 0;
+	const isLoading = () => props.state.kind === "loading";
+	const errorMessage = () =>
+		props.state.kind === "error" ? props.state.message : null;
+	const items = () => (props.state.kind === "ready" ? props.state.items : []);
+	const hasItems = () => items().length > 0;
+	const isIdle = () => props.state.kind === "idle";
 
 	const isActiveValue = (value: string) => {
 		if (props.selectedValues && props.selectedValues.includes(value)) {
@@ -43,21 +46,19 @@ export function OptionsList(props: OptionsListProps) {
 				</p>
 			</Show>
 
-			<Show when={!isLoading() && hasError()}>
-				<p class="text-sm text-red-600 dark:text-red-300">
-					{props.state.error}
-				</p>
+			<Show when={!isLoading() && errorMessage()}>
+				<p class="text-sm text-red-600 dark:text-red-300">{errorMessage()}</p>
 			</Show>
 
-			<Show when={!isLoading() && !hasError() && !hasItems()}>
+			<Show when={!isLoading() && !hasItems() && !errorMessage()}>
 				<p class="text-sm text-gray-500 dark:text-gray-400">
-					{OPTION_EMPTY_TEXT}
+					{isIdle() ? OPTION_EMPTY_TEXT : OPTION_EMPTY_TEXT}
 				</p>
 			</Show>
 
-			<Show when={!isLoading() && !hasError() && hasItems()}>
+			<Show when={!isLoading() && !errorMessage() && hasItems()}>
 				<ul class="flex max-h-64 flex-col gap-2 overflow-y-auto">
-					<For each={props.state.items}>
+					<For each={items()}>
 						{(item) => {
 							const active = () => isActiveValue(item);
 							return (
