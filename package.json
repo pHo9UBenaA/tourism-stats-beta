@@ -25,7 +25,6 @@
 		"redaxios": "catalog:",
 		"solid-js": "catalog:",
 		"tailwind-merge": "catalog:",
-		"vinxi": "catalog:",
 		"zod": "catalog:"
 	},
 	"devDependencies": {
