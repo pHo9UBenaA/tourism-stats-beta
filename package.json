@@ -1,0 +1,41 @@
+{
+	"name": "tourism-stats-beta",
+	"private": true,
+	"sideEffects": false,
+	"type": "module",
+	"scripts": {
+		"dev": "vinxi dev --port 3000",
+		"dev:e2e": "vinxi dev",
+		"build": "vinxi build",
+		"start": "vinxi start",
+		"format": "biome format --write .",
+		"check": "biome check .",
+		"lint": "oxlint --tsconfig ./tsconfig.json",
+		"lint:fix": "oxlint --tsconfig ./tsconfig.json --fix",
+		"typecheck": "tsgo",
+		"typecheck:tsc": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@tanstack/solid-router": "catalog:",
+		"@tanstack/solid-router-devtools": "catalog:",
+		"@tanstack/solid-start": "catalog:",
+		"redaxios": "catalog:",
+		"solid-js": "catalog:",
+		"tailwind-merge": "catalog:",
+		"vinxi": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "catalog:",
+		"@tailwindcss/postcss": "catalog:",
+		"@types/node": "catalog:",
+		"@typescript/native-preview": "catalog:",
+		"combinate": "catalog:",
+		"oxlint": "catalog:",
+		"postcss": "catalog:",
+		"tailwindcss": "catalog:",
+		"typescript": "catalog:",
+		"vite-plugin-solid": "catalog:",
+		"vite-tsconfig-paths": "catalog:"
+	}
+}
