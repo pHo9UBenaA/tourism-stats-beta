@@ -7,7 +7,7 @@ export const Route = createFileRoute("/")({
 
 function Home() {
 	return (
-		<main class="mx-auto flex max-w-5xl flex-col gap-8 p-4 md:p-8">
+		<main class="mx-auto flex max-w-6xl flex-col gap-8 p-4 md:p-8">
 			<DomesticTourismDashboard />
 		</main>
 	);

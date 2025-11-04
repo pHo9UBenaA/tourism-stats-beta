@@ -5,7 +5,7 @@
  */
 import type * as duckdb from "@duckdb/duckdb-wasm";
 
-import type { FetchResult } from "../../../src/types/fetch";
+import type { FetchResult } from "../../types/fetch";
 import { instantiateDuckDb, loadDuckDbExtensions } from "./boot";
 import { dropTourismDatasets, registerTourismDatasets } from "./registration";
 export { queryTargetOptions, queryTourismSeries } from "./queries";

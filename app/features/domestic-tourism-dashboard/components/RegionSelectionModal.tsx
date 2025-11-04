@@ -7,7 +7,7 @@ import {
 	REGION_LEVEL_MUNICIPALITY,
 	REGION_LEVEL_PREFECTURE,
 	type RegionLevel,
-} from "../../../../src/types/domestic-tourism";
+} from "../../../types/domestic-tourism";
 import type { OptionsState } from "../state/types";
 import { PrefectureSelectionPanel } from "./PrefectureSelectionPanel";
 import { MunicipalitySelectionPanel } from "./MunicipalitySelectionPanel";

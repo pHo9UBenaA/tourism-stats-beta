@@ -15,7 +15,10 @@ import {
 	listTargetNamesForLevel,
 	mapRowsToChartSeries,
 	toggleSelectionTarget,
-} from "../src/types/domestic-tourism";
+	normaliseTourismDataset,
+	rankPrefectureName,
+	sortPrefectureNames,
+} from "../app/types/domestic-tourism";
 
 describe("buildDomesticTourismQuery", () => {
 	it("creates a prefecture-level query that aggregates monthly population", () => {
@@ -76,6 +79,70 @@ describe("mapRowsToChartSeries", () => {
 			{ period: "2023-01", population: 5 },
 			{ period: "2023-02", population: 10 },
 		]);
+	});
+});
+
+describe("rankPrefectureName", () => {
+	it("orders prefectures according to administrative codes", () => {
+		expect(rankPrefectureName("北海道")).toBeLessThan(
+			rankPrefectureName("青森県"),
+		);
+		expect(rankPrefectureName("沖縄県")).toBeGreaterThan(
+			rankPrefectureName("東京都"),
+		);
+	});
+
+	it("returns a large rank for unknown names", () => {
+		expect(rankPrefectureName("未知県")).toBe(Number.POSITIVE_INFINITY);
+	});
+});
+
+describe("normaliseTourismDataset", () => {
+	it("sorts dataset entries by period and prefecture order", () => {
+		const dataset = [
+			{
+				year: 2023,
+				month: 2,
+				prefectureName: "青森県",
+				regionName: "弘前市",
+			},
+			{
+				year: 2023,
+				month: 1,
+				prefectureName: "北海道",
+				regionName: "札幌市中央区",
+			},
+			{
+				year: 2023,
+				month: 2,
+				prefectureName: "北海道",
+				regionName: "札幌市北区",
+			},
+		];
+
+		const normalised = normaliseTourismDataset(dataset);
+		if (!Array.isArray(normalised)) {
+			throw new Error("Expected normalised dataset to be an array");
+		}
+
+		expect(
+			normalised.map(
+				(record) =>
+					`${record.year}-${record.month}-${record.prefectureName}-${record.regionName ?? ""}`,
+			),
+		).toEqual([
+			"2023-1-北海道-札幌市中央区",
+			"2023-2-北海道-札幌市北区",
+			"2023-2-青森県-弘前市",
+		]);
+	});
+});
+
+describe("sortPrefectureNames", () => {
+	it("orders names according to prefecture ranking", () => {
+		const sorted = sortPrefectureNames(["神奈川県", "東京都", "北海道"]);
+
+		expect(sorted).toEqual(["北海道", "東京都", "神奈川県"]);
 	});
 });
 

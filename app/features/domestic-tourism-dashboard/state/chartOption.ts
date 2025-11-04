@@ -8,7 +8,7 @@ import {
 	formatTourismPeriod,
 	resolveTourismChartTitle,
 	type DomesticTourismSeries,
-} from "../../../../src/types/domestic-tourism";
+} from "../../../types/domestic-tourism";
 const CHART_GRID_PADDING = {
 	left: 48,
 	right: 16,

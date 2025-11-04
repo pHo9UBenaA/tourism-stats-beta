@@ -11,7 +11,7 @@ import {
 	toggleSelectionTarget,
 	type DomesticTourismSelection,
 	type RegionLevel,
-} from "../../../../src/types/domestic-tourism";
+} from "../../../types/domestic-tourism";
 import {
 	createEffect,
 	createMemo,

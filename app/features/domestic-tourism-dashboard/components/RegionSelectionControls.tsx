@@ -4,7 +4,7 @@
 import type { Accessor } from "solid-js";
 import { Show } from "solid-js";
 
-import type { RegionLevel } from "../../../../src/types/domestic-tourism";
+import type { RegionLevel } from "../../../types/domestic-tourism";
 import { RegionLevelToggle } from "./RegionLevelToggle";
 
 type RegionSelectionControlsProps = {

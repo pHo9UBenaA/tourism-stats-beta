@@ -10,7 +10,7 @@ import {
 	type Accessor,
 } from "solid-js";
 
-import { type DomesticTourismSelection } from "../../../../src/types/domestic-tourism";
+import { type DomesticTourismSelection } from "../../../types/domestic-tourism";
 import type { TourismDatabase } from "../../../utils/tourism-db";
 import { queryTourismSeries } from "../../../utils/tourism-db";
 import { runCancellableTask } from "../../../utils/cancellable";

@@ -30,7 +30,7 @@ validateUser(user)` + `saveUser(user)
 
 ## Always: Domain Model
 
-Aggregate domain models in `src/types/<domain>.ts`.
+Aggregate domain models in `app/types/<domain>.ts`.
 
 ## Always: Module Scoping
 

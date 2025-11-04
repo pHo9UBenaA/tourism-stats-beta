@@ -1,7 +1,7 @@
 /**
  * @file Shared state primitives for the domestic tourism dashboard feature.
  */
-import type { DomesticTourismSeries } from "../../../../src/types/domestic-tourism";
+import type { DomesticTourismSeries } from "../../../types/domestic-tourism";
 
 export type OptionsState =
 	| { kind: "idle" }

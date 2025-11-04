@@ -1,4 +1,7 @@
-import { createRootRoute, Link, Outlet } from "@tanstack/solid-router";
+/**
+ * @file Root route configuration for the tourism dashboard application shell.
+ */
+import { createRootRoute, Outlet } from "@tanstack/solid-router";
 import { TanStackRouterDevtools } from "@tanstack/solid-router-devtools";
 import { NotFound } from "~/components/NotFound";
 import appCss from "~/styles/app.css?url";
@@ -45,81 +48,20 @@ export const Route = createRootRoute({
 	component: RootComponent,
 });
 
+/**
+ * Render the shared layout shell and optional router devtools.
+ */
 function RootComponent() {
 	const shouldRenderDevtools =
 		typeof window !== "undefined" && import.meta.env.DEV;
+	const layoutClass =
+		"min-h-screen bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-50";
 
 	return (
 		<>
-			<div class="p-2 flex gap-2 text-lg">
-				<Link
-					to="/"
-					activeProps={{
-						class: "font-bold",
-					}}
-					activeOptions={{ exact: true }}
-				>
-					Home
-				</Link>{" "}
-				<Link
-					to="/posts"
-					activeProps={{
-						class: "font-bold",
-					}}
-				>
-					Posts
-				</Link>{" "}
-				<Link
-					to="/users"
-					activeProps={{
-						class: "font-bold",
-					}}
-				>
-					Users
-				</Link>{" "}
-				<Link
-					to="/layout-a"
-					activeProps={{
-						class: "font-bold",
-					}}
-				>
-					Layout
-				</Link>{" "}
-				<Link
-					to="/scripts"
-					activeProps={{
-						class: "font-bold",
-					}}
-				>
-					Scripts
-				</Link>{" "}
-				<Link
-					to="/deferred"
-					activeProps={{
-						class: "font-bold",
-					}}
-				>
-					Deferred
-				</Link>{" "}
-				<Link
-					to="/redirect"
-					activeProps={{
-						class: "font-bold",
-					}}
-				>
-					redirect
-				</Link>{" "}
-				<Link
-					// @ts-expect-error
-					to="/this-route-does-not-exist"
-					activeProps={{
-						class: "font-bold",
-					}}
-				>
-					This Route Does Not Exist
-				</Link>
+			<div class={layoutClass}>
+				<Outlet />
 			</div>
-			<Outlet />
 			{shouldRenderDevtools ? (
 				<TanStackRouterDevtools position="bottom-right" />
 			) : null}

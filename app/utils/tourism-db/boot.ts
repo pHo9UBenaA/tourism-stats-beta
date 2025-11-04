@@ -7,7 +7,8 @@ import * as duckdb from "@duckdb/duckdb-wasm";
 import duckdbWorker from "@duckdb/duckdb-wasm/dist/duckdb-browser-eh.worker.js?worker";
 import duckdbWasm from "@duckdb/duckdb-wasm/dist/duckdb-eh.wasm?url";
 
-import type { FetchResult } from "../../../src/types/fetch";
+import type { FetchResult } from "../../types/fetch";
+import { createDisposableConnection } from "./disposable";
 
 const EXTENSION_SETUP_SQL = `
   INSTALL httpfs;
@@ -45,7 +46,7 @@ export async function instantiateDuckDb(): Promise<DuckDbInstanceResult> {
 export async function loadDuckDbExtensions(
 	db: duckdb.AsyncDuckDB,
 ): Promise<FetchResult<void, string>> {
-	const connection = await db.connect();
+	await using connection = await createDisposableConnection(db);
 	try {
 		await connection.query(EXTENSION_SETUP_SQL);
 		return { ok: true, data: undefined };
@@ -54,7 +55,5 @@ export async function loadDuckDbExtensions(
 			ok: false,
 			error: error instanceof Error ? error.message : ERROR_EXTENSION,
 		};
-	} finally {
-		await connection.close();
 	}
 }

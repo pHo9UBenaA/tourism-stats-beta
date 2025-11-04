@@ -8,8 +8,9 @@ import type * as duckdb from "@duckdb/duckdb-wasm";
 import {
 	createTourismDatasetRegistrations,
 	type TourismDatasetRegistration,
-} from "../../../src/types/domestic-tourism";
-import type { FetchResult } from "../../../src/types/fetch";
+	normaliseTourismDataset,
+} from "../../types/domestic-tourism";
+import type { FetchResult } from "../../types/fetch";
 
 const ERROR_FETCH_PREFIX = "Failed to fetch" as const;
 const ERROR_REGISTER = "Failed to register tourism datasets" as const;
@@ -17,6 +18,19 @@ const ERROR_REGISTER = "Failed to register tourism datasets" as const;
 const DATASET_REGISTRATIONS = createTourismDatasetRegistrations();
 
 type BufferResult = FetchResult<Uint8Array, string>;
+
+/**
+ * Order tourism dataset JSON text via domain-level normalisation.
+ */
+function normaliseDatasetText(text: string): string {
+	try {
+		const parsed = JSON.parse(text);
+		const ordered = normaliseTourismDataset(parsed);
+		return JSON.stringify(ordered);
+	} catch {
+		return text;
+	}
+}
 
 async function fetchJsonBuffer(path: string): Promise<BufferResult> {
 	try {
@@ -29,9 +43,10 @@ async function fetchJsonBuffer(path: string): Promise<BufferResult> {
 		}
 
 		const text = await response.text();
+		const orderedText = normaliseDatasetText(text);
 		return {
 			ok: true,
-			data: new TextEncoder().encode(text),
+			data: new TextEncoder().encode(orderedText),
 		};
 	} catch (error) {
 		return {

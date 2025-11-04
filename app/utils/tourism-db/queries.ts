@@ -22,8 +22,10 @@ import {
 	type DomesticTourismRow,
 	type DomesticTourismSelection,
 	type DomesticTourismSeries,
-} from "../../../src/types/domestic-tourism";
-import type { FetchResult } from "../../../src/types/fetch";
+	sortPrefectureNames,
+} from "../../types/domestic-tourism";
+import type { FetchResult } from "../../types/fetch";
+import { createDisposableConnection } from "./disposable";
 
 const ERROR_UNKNOWN_QUERY = "Unknown query error" as const;
 
@@ -70,7 +72,7 @@ async function executeQuery<T>(
 	sql: string,
 	mapRow: (record: Record<string, unknown>) => T,
 ): Promise<QueryResult<T>> {
-	const connection = await db.connect();
+	await using connection = await createDisposableConnection(db);
 	try {
 		const table = await connection.query(sql);
 		const rows = table.toArray().map((row) => mapRow(toRecord(row)));
@@ -80,8 +82,6 @@ async function executeQuery<T>(
 			ok: false,
 			error: error instanceof Error ? error.message : ERROR_UNKNOWN_QUERY,
 		};
-	} finally {
-		await connection.close();
 	}
 }
 
@@ -153,8 +153,16 @@ export async function queryTargetOptions(
 		return result;
 	}
 
+	const filtered = result.data.filter((value) => value.length > 0);
+	if (args.level === REGION_LEVEL_PREFECTURE) {
+		return {
+			ok: true,
+			data: sortPrefectureNames(filtered) as string[],
+		};
+	}
+
 	return {
 		ok: true,
-		data: result.data.filter((value) => value.length > 0),
+		data: filtered.sort((left, right) => left.localeCompare(right, "ja")),
 	};
 }

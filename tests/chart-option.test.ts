@@ -3,9 +3,9 @@ import { describe, expect, it } from "vitest";
 import {
 	createTourismPeriod,
 	resolveTourismChartTitle,
-} from "../src/types/domestic-tourism";
+} from "../app/types/domestic-tourism";
 import { buildTourismChartOption } from "../app/features/domestic-tourism-dashboard/state/chartOption";
-import { DEFAULT_MULTI_SERIES_TITLE } from "../src/types/domestic-tourism";
+import { DEFAULT_MULTI_SERIES_TITLE } from "../app/types/domestic-tourism";
 
 const SAMPLE_SINGLE_SERIES = [
 	{

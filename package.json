@@ -4,10 +4,9 @@
 	"sideEffects": false,
 	"type": "module",
 	"scripts": {
-		"dev": "vite --config tools/dashboard/vite.config.ts --host 0.0.0.0",
-		"dev:e2e": "vite --config tools/dashboard/vite.config.ts",
+		"dev": "vite --config tools/dashboard/vite.config.ts",
 		"build": "vite build --config tools/dashboard/vite.config.ts",
-		"start": "vite preview --config tools/dashboard/vite.config.ts --host 0.0.0.0",
+		"start": "vite preview --config tools/dashboard/vite.config.ts",
 		"test": "vitest run",
 		"format": "biome format --write .",
 		"check": "biome check .",
