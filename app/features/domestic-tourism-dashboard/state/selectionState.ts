@@ -5,6 +5,9 @@ import {
 	REGION_LEVEL_MUNICIPALITY,
 	REGION_LEVEL_PREFECTURE,
 	describeSelectionList,
+	filterSelectionsByLevel,
+	listMunicipalTargetsForPrefecture,
+	listTargetNamesForLevel,
 	toggleSelectionTarget,
 	type DomesticTourismSelection,
 	type RegionLevel,
@@ -19,6 +22,7 @@ import {
 
 import type { TourismDatabase } from "../../../utils/tourism-db";
 import { queryTargetOptions } from "../../../utils/tourism-db";
+import { runCancellableTask } from "../../../utils/cancellable";
 import type { OptionsState } from "./types";
 
 const OPTIONS_IDLE: OptionsState = { kind: "idle" };
@@ -101,13 +105,11 @@ export function createSelectionState({
 		}
 
 		setPrefectureOptions(OPTIONS_LOADING);
-		let active = true;
-
-		(async () => {
+		runCancellableTask(onCleanup, async (signal) => {
 			const result = await queryTargetOptions(db.db, {
 				level: REGION_LEVEL_PREFECTURE,
 			});
-			if (!active) {
+			if (signal.aborted) {
 				return;
 			}
 
@@ -119,10 +121,6 @@ export function createSelectionState({
 			} else {
 				setPrefectureOptions(createOptionsError(result.error));
 			}
-		})();
-
-		onCleanup(() => {
-			active = false;
 		});
 	});
 
@@ -140,14 +138,12 @@ export function createSelectionState({
 		}
 
 		setMunicipalityOptions(OPTIONS_LOADING);
-		let active = true;
-
-		(async () => {
+		runCancellableTask(onCleanup, async (signal) => {
 			const result = await queryTargetOptions(db.db, {
 				level: REGION_LEVEL_MUNICIPALITY,
 				prefectureName: prefecture,
 			});
-			if (!active) {
+			if (signal.aborted) {
 				return;
 			}
 
@@ -156,22 +152,16 @@ export function createSelectionState({
 			} else {
 				setMunicipalityOptions(createOptionsError(result.error));
 			}
-		})();
-
-		onCleanup(() => {
-			active = false;
 		});
 	});
 
 	const selections = createMemo(() => {
 		const currentLevel = level();
-		return selectedTargets().filter((entry) => entry.level === currentLevel);
+		return filterSelectionsByLevel(selectedTargets(), currentLevel);
 	});
 
 	const selectedPrefectures = createMemo(() =>
-		selectedTargets()
-			.filter((entry) => entry.level === REGION_LEVEL_PREFECTURE)
-			.map((entry) => entry.targetName),
+		listTargetNamesForLevel(selectedTargets(), REGION_LEVEL_PREFECTURE),
 	);
 
 	const selectedMunicipalitiesForFocus = createMemo(() => {
@@ -180,13 +170,7 @@ export function createSelectionState({
 			return [];
 		}
 
-		return selectedTargets()
-			.filter(
-				(entry) =>
-					entry.level === REGION_LEVEL_MUNICIPALITY &&
-					entry.prefectureName === prefecture,
-			)
-			.map((entry) => entry.targetName);
+		return listMunicipalTargetsForPrefecture(selectedTargets(), prefecture);
 	});
 
 	const summaryLabel = createMemo(() => describeSelectionList(selections()));

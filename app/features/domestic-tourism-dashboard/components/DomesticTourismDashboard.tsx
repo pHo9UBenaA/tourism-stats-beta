@@ -1,12 +1,14 @@
 /**
  * @file Domestic tourism dashboard feature entry point.
  */
-import { Show } from "solid-js";
+import { Show, createMemo } from "solid-js";
 
 import { ChartSection } from "./ChartSection";
 import { RegionSelectionControls } from "./RegionSelectionControls";
 import { RegionSelectionModal } from "./RegionSelectionModal";
-import { createDomesticTourismDashboardState } from "../state/createDashboardState";
+import { createDatabaseState } from "../state/databaseLifecycle";
+import { createChartState } from "../state/chartState";
+import { createSelectionState } from "../state/selectionState";
 
 const HEADING_TITLE = "Domestic Tourism Information";
 const HEADING_DESCRIPTION =
@@ -18,13 +20,31 @@ const DATABASE_LOADING_MESSAGE =
  * Compose UI for exploring domestic tourism metrics.
  */
 export function DomesticTourismDashboard() {
-	const state = createDomesticTourismDashboardState();
-	const databaseState = () => state.database.state();
-	const isModalOpen = () => state.selection.modalState().kind === "open";
+	const database = createDatabaseState();
+	const databaseState = () => database.state();
+	const databaseInstance = createMemo(() => {
+		const current = databaseState();
+		return current.kind === "ready" ? current.database : null;
+	});
+	const chartComponent = createMemo(() => {
+		const current = databaseState();
+		return current.kind === "ready" ? current.chartComponent : null;
+	});
+	const databaseError = () => {
+		const current = databaseState();
+		return current.kind === "error" ? current.message : null;
+	};
+	const isDatabaseLoading = () => databaseState().kind === "loading";
 	const hasDatabase = () => databaseState().kind === "ready";
-	const databaseError = () => state.database.errorMessage();
-	const isDatabaseLoading = () => state.database.isLoading();
-	const chartComponent = () => state.database.chartComponent();
+
+	const selection = createSelectionState({ database: databaseInstance });
+	const chart = createChartState({
+		database: databaseInstance,
+		selections: selection.selections,
+		selectionSummary: selection.summaryLabel,
+	});
+
+	const isModalOpen = () => selection.modalState().kind === "open";
 
 	return (
 		<div class="flex flex-col gap-6">
@@ -50,16 +70,16 @@ export function DomesticTourismDashboard() {
 			<Show when={!isDatabaseLoading() && hasDatabase()}>
 				<section class="flex flex-col gap-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
 					<RegionSelectionControls
-						selectedLevel={state.selection.level}
-						onSelectPrefecture={state.selection.selectPrefectureLevel}
-						onSelectMunicipality={state.selection.selectMunicipalityLevel}
-						onOpenModal={state.selection.openModal}
-						currentLabel={state.selection.currentLabel}
+						selectedLevel={selection.level}
+						onSelectPrefecture={selection.selectPrefectureLevel}
+						onSelectMunicipality={selection.selectMunicipalityLevel}
+						onOpenModal={selection.openModal}
+						currentLabel={selection.currentLabel}
 					/>
 
 					<ChartSection
-						chartState={state.chart.state}
-						chartOption={state.chart.option}
+						chartState={chart.state}
+						chartOption={chart.option}
 						chartComponent={chartComponent}
 					/>
 				</section>
@@ -67,18 +87,16 @@ export function DomesticTourismDashboard() {
 
 			<Show when={isModalOpen()}>
 				<RegionSelectionModal
-					selectedLevel={state.selection.level}
-					selectedLevelLabel={state.selection.levelLabel}
-					prefectureOptions={state.selection.prefectureOptions}
-					municipalityOptions={state.selection.municipalityOptions}
-					selectedPrefectures={state.selection.selectedPrefectures}
-					focusedPrefecture={state.selection.focusedPrefecture}
-					selectedMunicipalities={
-						state.selection.selectedMunicipalitiesForFocus
-					}
-					onSelectPrefecture={state.selection.handlePrefectureSelect}
-					onSelectMunicipality={state.selection.handleMunicipalitySelect}
-					onClose={state.selection.closeModal}
+					selectedLevel={selection.level}
+					selectedLevelLabel={selection.levelLabel}
+					prefectureOptions={selection.prefectureOptions}
+					municipalityOptions={selection.municipalityOptions}
+					selectedPrefectures={selection.selectedPrefectures}
+					focusedPrefecture={selection.focusedPrefecture}
+					selectedMunicipalities={selection.selectedMunicipalitiesForFocus}
+					onSelectPrefecture={selection.handlePrefectureSelect}
+					onSelectMunicipality={selection.handleMunicipalitySelect}
+					onClose={selection.closeModal}
 				/>
 			</Show>
 		</div>

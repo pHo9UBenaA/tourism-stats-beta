@@ -13,6 +13,7 @@ import {
 import { type DomesticTourismSelection } from "../../../../src/types/domestic-tourism";
 import type { TourismDatabase } from "../../../utils/tourism-db";
 import { queryTourismSeries } from "../../../utils/tourism-db";
+import { runCancellableTask } from "../../../utils/cancellable";
 import { buildTourismChartOption } from "./chartOption";
 import type { ChartState } from "./types";
 
@@ -47,16 +48,14 @@ export function createChartState({
 		}
 
 		setState({ kind: "loading" });
-		let active = true;
-
-		(async () => {
+		runCancellableTask(onCleanup, async (signal) => {
 			const results = await Promise.all(
 				activeSelections.map((selection) =>
 					queryTourismSeries(db.db, selection),
 				),
 			);
 
-			if (!active) {
+			if (signal.aborted) {
 				return;
 			}
 
@@ -71,10 +70,6 @@ export function createChartState({
 			);
 
 			setState({ kind: "ready", series: seriesList });
-		})();
-
-		onCleanup(() => {
-			active = false;
 		});
 	});
 

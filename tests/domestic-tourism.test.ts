@@ -7,7 +7,12 @@ import {
 	buildTargetOptionsQuery,
 	createTourismPeriod,
 	describeSelectionList,
+	filterSelectionsByLevel,
 	formatTourismPeriod,
+	deriveChartPeriodLabels,
+	createTourismDatasetRegistrations,
+	listMunicipalTargetsForPrefecture,
+	listTargetNamesForLevel,
 	mapRowsToChartSeries,
 	toggleSelectionTarget,
 } from "../src/types/domestic-tourism";
@@ -71,6 +76,60 @@ describe("mapRowsToChartSeries", () => {
 			{ period: "2023-01", population: 5 },
 			{ period: "2023-02", population: 10 },
 		]);
+	});
+});
+
+describe("deriveChartPeriodLabels", () => {
+	it("merges and orders periods across multiple series", () => {
+		const labels = deriveChartPeriodLabels([
+			{
+				label: "Prefecture",
+				points: [
+					{
+						period: createTourismPeriod(2023, 2),
+						population: 5,
+					},
+					{
+						period: createTourismPeriod(2023, 3),
+						population: 6,
+					},
+				],
+			},
+			{
+				label: "Municipality",
+				points: [
+					{
+						period: createTourismPeriod(2023, 1),
+						population: 2,
+					},
+					{
+						period: createTourismPeriod(2023, 3),
+						population: 4,
+					},
+				],
+			},
+		]);
+
+		expect(labels).toEqual(["2023-01", "2023-02", "2023-03"]);
+	});
+});
+
+describe("createTourismDatasetRegistrations", () => {
+	it("returns dataset metadata for each year and region level", () => {
+		const registrations = createTourismDatasetRegistrations();
+		const prefectureEntries = registrations.filter(
+			(entry) => entry.level === REGION_LEVEL_PREFECTURE,
+		);
+		const municipalityEntries = registrations.filter(
+			(entry) => entry.level === REGION_LEVEL_MUNICIPALITY,
+		);
+
+		expect(registrations).toHaveLength(6);
+		expect(prefectureEntries).toHaveLength(3);
+		expect(municipalityEntries).toHaveLength(3);
+		expect(prefectureEntries[0]).toMatchObject({
+			path: expect.stringContaining("/data/digital/pref2021.json"),
+		});
 	});
 });
 
@@ -163,6 +222,77 @@ describe("describeSelectionList", () => {
 		]);
 
 		expect(label).toBe("北海道 / 札幌市中央区");
+	});
+});
+
+describe("selection domain helpers", () => {
+	it("filters selections by level", () => {
+		const entries = [
+			{
+				level: REGION_LEVEL_PREFECTURE,
+				targetName: "北海道",
+			},
+			{
+				level: REGION_LEVEL_MUNICIPALITY,
+				targetName: "札幌市中央区",
+				prefectureName: "北海道",
+			},
+		];
+
+		const filtered = filterSelectionsByLevel(entries, REGION_LEVEL_PREFECTURE);
+		expect(filtered).toEqual([
+			{
+				level: REGION_LEVEL_PREFECTURE,
+				targetName: "北海道",
+			},
+		]);
+	});
+
+	it("lists target names for the provided level", () => {
+		const entries = [
+			{
+				level: REGION_LEVEL_PREFECTURE,
+				targetName: "北海道",
+			},
+			{
+				level: REGION_LEVEL_PREFECTURE,
+				targetName: "青森県",
+			},
+		];
+
+		expect(listTargetNamesForLevel(entries, REGION_LEVEL_PREFECTURE)).toEqual([
+			"北海道",
+			"青森県",
+		]);
+	});
+
+	it("lists municipalities scoped by the focused prefecture", () => {
+		const entries = [
+			{
+				level: REGION_LEVEL_PREFECTURE,
+				targetName: "北海道",
+			},
+			{
+				level: REGION_LEVEL_MUNICIPALITY,
+				targetName: "札幌市中央区",
+				prefectureName: "北海道",
+			},
+			{
+				level: REGION_LEVEL_MUNICIPALITY,
+				targetName: "函館市",
+				prefectureName: "北海道",
+			},
+			{
+				level: REGION_LEVEL_MUNICIPALITY,
+				targetName: "青森市",
+				prefectureName: "青森県",
+			},
+		];
+
+		expect(listMunicipalTargetsForPrefecture(entries, "北海道")).toEqual([
+			"札幌市中央区",
+			"函館市",
+		]);
 	});
 });
 

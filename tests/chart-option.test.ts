@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { createTourismPeriod } from "../src/types/domestic-tourism";
 import {
-	DEFAULT_MULTI_SERIES_TITLE,
-	buildTourismChartOption,
-} from "../app/features/domestic-tourism-dashboard/state/chartOption";
+	createTourismPeriod,
+	resolveTourismChartTitle,
+} from "../src/types/domestic-tourism";
+import { buildTourismChartOption } from "../app/features/domestic-tourism-dashboard/state/chartOption";
+import { DEFAULT_MULTI_SERIES_TITLE } from "../src/types/domestic-tourism";
 
 const SAMPLE_SINGLE_SERIES = [
 	{
@@ -75,5 +76,34 @@ describe("buildTourismChartOption", () => {
 		expect(option.title?.text).toBe(DEFAULT_MULTI_SERIES_TITLE);
 		expect(option.series?.[0]).not.toHaveProperty("areaStyle");
 		expect(option.series?.[1]?.data).toEqual([3, 8]);
+	});
+});
+
+describe("resolveTourismChartTitle", () => {
+	it("returns the summary when provided", () => {
+		expect(
+			resolveTourismChartTitle({
+				series: SAMPLE_SINGLE_SERIES,
+				summary: "Override",
+			}),
+		).toBe("Override");
+	});
+
+	it("falls back to the single series label without a summary", () => {
+		expect(
+			resolveTourismChartTitle({
+				series: SAMPLE_SINGLE_SERIES,
+				summary: null,
+			}),
+		).toBe("Hokkaido");
+	});
+
+	it("falls back to the default multi-series title", () => {
+		expect(
+			resolveTourismChartTitle({
+				series: SAMPLE_MULTI_SERIES,
+				summary: null,
+			}),
+		).toBe(DEFAULT_MULTI_SERIES_TITLE);
 	});
 });

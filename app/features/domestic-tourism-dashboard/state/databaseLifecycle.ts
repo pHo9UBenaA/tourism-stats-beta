@@ -19,7 +19,7 @@ export type ChartComponent =
 	| ((props: EChartsAutoSizeProps) => JSX.Element)
 	| null;
 
-export type DatabaseLifecycleState =
+export type DatabaseState =
 	| { kind: "loading" }
 	| { kind: "error"; message: string }
 	| {
@@ -28,15 +28,15 @@ export type DatabaseLifecycleState =
 			chartComponent: ChartComponent;
 	  };
 
-type Lifecycle = {
-	readonly state: Accessor<DatabaseLifecycleState>;
+type DatabaseStateSlice = {
+	readonly state: Accessor<DatabaseState>;
 };
 
 /**
  * Manage DuckDB instantiation and cleanup alongside the chart component module.
  */
-export function createDatabaseLifecycle(): Lifecycle {
-	const [state, setState] = createSignal<DatabaseLifecycleState>({
+export function createDatabaseState(): DatabaseStateSlice {
+	const [state, setState] = createSignal<DatabaseState>({
 		kind: "loading",
 	});
 

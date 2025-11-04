@@ -4,11 +4,11 @@
 import type { EChartsOption } from "echarts";
 
 import {
+	deriveChartPeriodLabels,
 	formatTourismPeriod,
+	resolveTourismChartTitle,
 	type DomesticTourismSeries,
 } from "../../../../src/types/domestic-tourism";
-
-export const DEFAULT_MULTI_SERIES_TITLE = "Selected Regions";
 const CHART_GRID_PADDING = {
 	left: 48,
 	right: 16,
@@ -25,12 +25,6 @@ type ChartOptionArgs = {
 	readonly title: string;
 };
 
-function sortPeriods(periods: string[]): string[] {
-	return [...periods].sort((left, right) =>
-		left < right ? -1 : left > right ? 1 : 0,
-	);
-}
-
 function buildSeriesData(
 	periods: string[],
 	series: DomesticTourismSeries,
@@ -45,14 +39,7 @@ function buildSeriesData(
 }
 
 function assembleOption({ series, title }: ChartOptionArgs): EChartsOption {
-	const periodSet = new Set<string>();
-	series.forEach((entry) => {
-		entry.points.forEach((point) => {
-			periodSet.add(formatTourismPeriod(point.period));
-		});
-	});
-
-	const periods = sortPeriods(Array.from(periodSet));
+	const periods = deriveChartPeriodLabels(series);
 	const shouldFillArea = series.length === 1;
 
 	return {
@@ -85,21 +72,6 @@ function assembleOption({ series, title }: ChartOptionArgs): EChartsOption {
 	};
 }
 
-function resolveChartTitle(
-	series: DomesticTourismSeries[],
-	summary: string | null,
-): string {
-	if (summary && summary.length > 0) {
-		return summary;
-	}
-
-	if (series.length === 1) {
-		return series[0]?.label ?? DEFAULT_MULTI_SERIES_TITLE;
-	}
-
-	return DEFAULT_MULTI_SERIES_TITLE;
-}
-
 type BuildTourismChartOptionArgs = {
 	readonly series: DomesticTourismSeries[];
 	readonly summary: string | null;
@@ -114,6 +86,9 @@ export function buildTourismChartOption({
 }: BuildTourismChartOptionArgs): EChartsOption {
 	return assembleOption({
 		series,
-		title: resolveChartTitle(series, summary),
+		title: resolveTourismChartTitle({
+			series,
+			summary,
+		}),
 	});
 }

@@ -60,6 +60,14 @@ export type DomesticTourismSeries = {
 	readonly points: DomesticTourismChartPoint[];
 };
 
+export const DEFAULT_MULTI_SERIES_TITLE = "Selected Regions" as const;
+
+export type TourismDatasetRegistration = {
+	readonly level: RegionLevel;
+	readonly year: number;
+	readonly path: string;
+};
+
 const PERIOD_MONTH_PAD_LENGTH = 2;
 const SELECTION_SEPARATOR = " / ";
 const SELECTION_DELIMITER = ", ";
@@ -149,6 +157,61 @@ export function toggleSelectionTarget(
 		: [...current, next];
 }
 
+function isSelectionForLevel(
+	selection: DomesticTourismSelection,
+	level: RegionLevel,
+): boolean {
+	return selection.level === level;
+}
+
+function isMunicipalSelectionForPrefecture(
+	selection: DomesticTourismSelection,
+	prefectureName: string,
+): selection is MunicipalSelection {
+	return (
+		selection.level === REGION_LEVEL_MUNICIPALITY &&
+		selection.prefectureName === prefectureName
+	);
+}
+
+/**
+ * Filter selections by level while preserving insertion order.
+ */
+export function filterSelectionsByLevel(
+	selections: DomesticTourismSelection[],
+	level: RegionLevel,
+): DomesticTourismSelection[] {
+	return selections.filter((selection) =>
+		isSelectionForLevel(selection, level),
+	);
+}
+
+/**
+ * Project target names for the provided level.
+ */
+export function listTargetNamesForLevel(
+	selections: DomesticTourismSelection[],
+	level: RegionLevel,
+): string[] {
+	return filterSelectionsByLevel(selections, level).map(
+		(selection) => selection.targetName,
+	);
+}
+
+/**
+ * List municipality target names scoped by prefecture.
+ */
+export function listMunicipalTargetsForPrefecture(
+	selections: DomesticTourismSelection[],
+	prefectureName: string,
+): string[] {
+	return selections
+		.filter((selection) =>
+			isMunicipalSelectionForPrefecture(selection, prefectureName),
+		)
+		.map((selection) => selection.targetName);
+}
+
 function describeSelection(selection: DomesticTourismSelection): string {
 	if (selection.level === REGION_LEVEL_PREFECTURE) {
 		return selection.targetName;
@@ -222,6 +285,24 @@ function selectFilePrefix(level: RegionLevel): string {
 		: MUNICIPALITY_FILE_PREFIX;
 }
 
+const DATASET_LEVELS: readonly RegionLevel[] = [
+	REGION_LEVEL_PREFECTURE,
+	REGION_LEVEL_MUNICIPALITY,
+];
+
+/**
+ * Describe tourism datasets available for DuckDB registration.
+ */
+export function createTourismDatasetRegistrations(): TourismDatasetRegistration[] {
+	return DATA_YEARS.flatMap((year) =>
+		DATASET_LEVELS.map((level) => ({
+			level,
+			year,
+			path: `${DATA_DIRECTORY}/${selectFilePrefix(level)}${year}${JSON_EXTENSION}`,
+		})),
+	);
+}
+
 /**
  * Build a DuckDB SQL statement that aggregates monthly population for a selection.
  */
@@ -286,4 +367,47 @@ export function mapRowsToChartSeries({
 		label: targetLabel,
 		points,
 	};
+}
+
+/**
+ * Create ordered ISO period labels across a collection of series.
+ */
+export function deriveChartPeriodLabels(
+	series: DomesticTourismSeries[],
+): string[] {
+	const periodsByKey = new Map<string, TourismPeriod>();
+
+	series.forEach((entry) => {
+		entry.points.forEach((point) => {
+			const key = formatTourismPeriod(point.period);
+			periodsByKey.set(key, point.period);
+		});
+	});
+
+	return Array.from(periodsByKey.values())
+		.sort((left, right) => compareTourismPeriod(left, right))
+		.map((period) => formatTourismPeriod(period));
+}
+
+type ResolveTourismChartTitleArgs = {
+	readonly series: DomesticTourismSeries[];
+	readonly summary: string | null;
+};
+
+/**
+ * Resolve a chart title either from summary text or fallback heuristics.
+ */
+export function resolveTourismChartTitle({
+	series,
+	summary,
+}: ResolveTourismChartTitleArgs): string {
+	if (summary && summary.length > 0) {
+		return summary;
+	}
+
+	if (series.length === 1) {
+		return series[0]?.label ?? DEFAULT_MULTI_SERIES_TITLE;
+	}
+
+	return DEFAULT_MULTI_SERIES_TITLE;
 }
